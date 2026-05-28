@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of cfg_main</title>
+  <meta name="keywords" content="cfg_main">
+  <meta name="description" content="CONFIGURATION FILE">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="index.html">config</a> &gt; cfg_main.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\config&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>cfg_main
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>CONFIGURATION FILE</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> CONFIGURATION FILE
+
+ This is a configuration file for the main script
+ MULTI_GNSS_Simulation_tool. It allows to set all the variables and
+ parameters to perform the simulation.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% CONFIGURATION FILE</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This is a configuration file for the main script</span>
+0004 <span class="comment">% MULTI_GNSS_Simulation_tool. It allows to set all the variables and</span>
+0005 <span class="comment">% parameters to perform the simulation.</span>
+0006 
+0007 
+0008 Insert_data=[2022 12 13 9 0 0];     <span class="comment">% Insert initial simulation [year month day hour minutes seconds]</span>
+0009 el_mask=10;                         <span class="comment">% [Deg]</span>
+0010 location=[45.067828,7.690724,239];  <span class="comment">% [Lat Long_est h]</span>
+0011 download_last_rinex = 0;            <span class="comment">% Download last available rinex of the day</span>
+0012 in_path = <span class="string">'BRDM00DLR_S_20223470000_01D_MN.rnx'</span>;     <span class="comment">%Insert the name of the rinex file</span>
+0013 Costellation=[1,1,1,1];             <span class="comment">% [GPS,GLonass,Beidou,Galileo] chose 1 to activate system</span>
+0014 simulation_time=2;                  <span class="comment">% [hour]</span>
+0015 step_sim=30;                        <span class="comment">% [sec]</span>
+0016 
+0017 <span class="comment">%% PDOP Simulation</span>
+0018 enable_pdop = 1;            <span class="comment">% Enable PDOP analysis</span>
+0019 
+0020 <span class="comment">%% Skyplot Input</span>
+0021 enable_skyplot = 1;         <span class="comment">% Enable skyplot 1=True, 0=False</span>
+0022 Skyplot_time=[0,2];         <span class="comment">% To plot a specific time instant insert the number of hours after the strart time. For an interval insert a vector of hours like [0,2]</span>
+0023 Skyplot_costellation=5;     <span class="comment">% 1=GPS 2=GLONASS 3=BEIDOU 4=GALILEO 5=Multi Costellation</span>
+0024 skyplot_downsample = 10;    <span class="comment">% Downsample skyplot plotting [s]</span>
+0025 
+0026 <span class="comment">%% Input for Urban Environment simulation</span>
+0027 enable_urban_sim = 1;       <span class="comment">% Enable urban simulation 1=True, 0=False</span>
+0028 enable_urban_skyplot=1;     <span class="comment">% Enable skyplot 1=True, 0=False</span>
+0029 dir_az=312;                 <span class="comment">% [Deg] direction of road 0°=N</span>
+0030 width=8;                    <span class="comment">% Width of the road  [m]</span>
+0031 height=12;                  <span class="comment">% Height of building [m]</span>
+0032 
+0033 <span class="comment">%% Loading the input</span>
+0034 load_eph = 1;           <span class="comment">% Load the ephemeris if already exist (after first run). If 0 the rinex file will be used.</span>
+0035                         <span class="comment">% Thei can be find in &quot;input\eph.mat&quot;</span>
+0036 <span class="comment">%% Save output</span>
+0037 save_raw_orbits = 1;    <span class="comment">% Save the computed position for the full set of satellites. It can be find in &quot;input\satRawPos.m&quot;</span>
+0038 save_vis_orbits = 1;    <span class="comment">% Save the visible satellites position. It can be fin in &quot;output\satVisPos.m&quot;</span>
+0039 load_raw_orbits = 0;    <span class="comment">% Load raw orbits for all satellites (available after saving raw_orbits)</span>
+0040 load_vis_orbits = 0;    <span class="comment">% Load visible satellites (available after saveing vis_orbits)</span></pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

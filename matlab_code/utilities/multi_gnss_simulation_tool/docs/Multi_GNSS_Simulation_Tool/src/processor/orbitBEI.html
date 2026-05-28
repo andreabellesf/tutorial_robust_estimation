@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of orbitBEI</title>
+  <meta name="keywords" content="orbitBEI">
+  <meta name="description" content="orbitBEI Computes the orbits of Beidu satellites.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">processor</a> &gt; orbitBEI.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\processor&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>orbitBEI
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>orbitBEI Computes the orbits of Beidu satellites.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [SatBEI_all]=orbitBEI(eph,indiceC,Time_index) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> orbitBEI Computes the orbits of Beidu satellites.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="bisection.html" class="code" title="function [x,e,iter]=bisection(f,a,b,err,itermax)">bisection</a>	bisection Bisection method for equation root finding.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [SatBEI_all]=orbitBEI(eph,indiceC,Time_index)</a>
+0002 <span class="comment">% orbitBEI Computes the orbits of Beidu satellites.</span>
+0003 
+0004 <span class="comment">%% Parameters</span>
+0005 pi=3.1415926535898;
+0006 mu=3.986004418e14;<span class="comment">%costante gravitazionale [m^3/s^2]</span>
+0007 omegae=7.2921151467e-5;<span class="comment">%velocità angolare della terra [rad/s]</span>
+0008 [n,~]=size(indiceC); 
+0009 <span class="comment">%% Computing Position</span>
+0010 <span class="keyword">for</span> k=1:n
+0011     <span class="keyword">if</span> indiceC(k,2)~=0
+0012     t0e=eph(indiceC(k,2),20); <span class="comment">%Time in the week BST [s]</span>
+0013     A=eph(indiceC(k,2),19)^2;
+0014     n0=sqrt(mu/A^3);
+0015     tk=Time_index-((eph(indiceC(k,2),6)*3600+eph(indiceC(k,2),7)*60+eph(indiceC(k,2),8)));
+0016     deltan=eph(indiceC(k,2),14);
+0017     mean_motion=n0+deltan;
+0018     M0=eph(indiceC(k,2),15);
+0019     M=M0+mean_motion*tk;<span class="comment">%Mean anomaly</span>
+0020     ecc=eph(indiceC(k,2),17);
+0021     f=@(x)x-ecc.*sin(x)-M;
+0022     [E,~,~]=<a href="bisection.html" class="code" title="function [x,e,iter]=bisection(f,a,b,err,itermax)">bisection</a>(f,-(abs(M)+1),abs(M)+1,1e-18,200);<span class="comment">%Eccentric anomaly</span>
+0023     senov=sqrt(1-ecc^2)*sin(E)/(1-ecc*cos(E));
+0024     cosenov=(cos(E)-ecc)/(1-ecc*cos(E));
+0025     v=atan2(senov,cosenov);<span class="comment">%true anomaly</span>
+0026     omega=eph(indiceC(k,2),26);
+0027     PHI=v+omega ;<span class="comment">%argument of latitude</span>
+0028     Cus=eph(indiceC(k,2),18);
+0029     Cuc=eph(indiceC(k,2),16);
+0030     Crs=eph(indiceC(k,2),13);
+0031     Crc=eph(indiceC(k,2),25);
+0032     Cis=eph(indiceC(k,2),23);
+0033     Cic=eph(indiceC(k,2),21);
+0034     du=Cus*sin(2*PHI)+Cuc*cos(2*PHI);
+0035     dr=Crs*sin(2*PHI)+Crc*cos(2*PHI);
+0036     di=Cis*sin(2*PHI)+Cic*cos(2*PHI);
+0037     u=PHI+du; <span class="comment">%corrected argument of latitude</span>
+0038     r=A*(1-ecc*cos(E))+dr;
+0039     i0=eph(indiceC(k,2),24);
+0040     idot=eph(indiceC(k,2),28);
+0041     i=i0+di+idot*tk; <span class="comment">%corrected inclination</span>
+0042     xk=r*cos(u); <span class="comment">%position in orbital plane</span>
+0043     yk=r*sin(u) ;<span class="comment">%positin in orbital plane</span>
+0044     <span class="keyword">if</span> (k==1 || k==2 || k==3 || k==4 || k==5 ) <span class="comment">% GEO satelliti</span>
+0045           OMEGA0=eph(indiceC(k,2),22);
+0046           OMEGADOT=eph(indiceC(k,2),27);
+0047           OMEGA=OMEGA0+OMEGADOT*tk-omegae*t0e;
+0048           alpha=omegae*tk;
+0049           beta=deg2rad(-5);
+0050           Rx=[1 0 0;0 cos(beta) sin(beta);0 -sin(beta) cos(beta)];
+0051           Rz=[cos(alpha) sin(alpha) 0;-sin(alpha) cos(alpha) 0;0 0 1];
+0052           Xgk(1,k)=xk*cos(OMEGA)-yk*cos(i)*sin(OMEGA);
+0053           Ygk(1,k)=xk*sin(OMEGA)+yk*cos(i)*cos(OMEGA);
+0054           Zgk(1,k)=yk*sin(i);
+0055           Position=Rz*Rx*[Xgk(1,k);Ygk(1,k);Zgk(1,k)];
+0056           SatBEI_all(1,k)=Position(1,1);<span class="comment">%[m]</span>
+0057           SatBEI_all(2,k)=Position(2,1);<span class="comment">%[m]</span>
+0058           SatBEI_all(3,k)=Position(3,1);<span class="comment">%[m]</span>
+0059     <span class="keyword">else</span> <span class="comment">% MEO satelliti</span>
+0060           OMEGA0=eph(indiceC(k,2),22);
+0061           OMEGADOT=eph(indiceC(k,2),27);
+0062           OMEGA=OMEGA0+(OMEGADOT-omegae)*tk-omegae*t0e ;
+0063           SatBEI_all(1,k)=xk*cos(OMEGA)-yk*cos(i)*sin(OMEGA);<span class="comment">%[m]</span>
+0064           SatBEI_all(2,k)=xk*sin(OMEGA)+yk*cos(i)*cos(OMEGA);<span class="comment">%[m]</span>
+0065           SatBEI_all(3,k)=yk*sin(i);<span class="comment">%[m]</span>
+0066     <span class="keyword">end</span>
+0067     <span class="keyword">end</span>
+0068 <span class="keyword">end</span>
+0069</pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

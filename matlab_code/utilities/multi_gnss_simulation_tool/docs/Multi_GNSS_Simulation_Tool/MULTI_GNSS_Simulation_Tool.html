@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of MULTI_GNSS_Simulation_Tool</title>
+  <meta name="keywords" content="MULTI_GNSS_Simulation_Tool">
+  <meta name="description" content="MULTI GNSS SIMULATION TOOL">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">Multi_GNSS_Simulation_Tool</a> &gt; MULTI_GNSS_Simulation_Tool.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>MULTI_GNSS_Simulation_Tool
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>MULTI GNSS SIMULATION TOOL</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> MULTI GNSS SIMULATION TOOL
+ Path: MULTI_GNSS_Simulation_Tool.m
+
+ The tool provides functionalities to perform orbits computation starting
+ from the broadcasted ephemerides parameters in brdc rinex files for GNSS
+ satellites. The compatible sytems are GPS, Galileo, Beidu, and Glonass.
+ Additionally, analysis of position diulition of precision (PDOP) is also
+ possible, assessing the availablility of a particular system in a
+ specific location and time. The tool can be used as initial module  for a
+ GNSS software simulator as well.
+ After configuring all the parameters in the file &quot;cfg_main.m&quot; located in 
+ the folder &quot;config&quot;, the script can be lunched.
+
+ External M-Files required: none
+
+ Author: Filippo Giacomo, Rizzi
+ Email: filippo.rizzi@dlr.de
+ Matlab ver.: Tested on 7 (R2022a)
+ Created: 2022-12-15
+--------------------------------------------------------------------------
+ TODO % Rename some variables written in Italian
+ TODO % Describe accurately all functions with input/outptu
+--------------------------------------------------------------------------</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../Multi_GNSS_Simulation_Tool/src/common/juliandata.html" class="code" title="function [JD,tetaG0,tetaG]=juliandata(anno,mese,giorno,ora)">juliandata</a>	juliandata Compute the Julan date</li><li><a href="../Multi_GNSS_Simulation_Tool/src/common/time_fun.html" class="code" title="function [UTC]=time_fun(seconds,Insert_data)">time_fun</a>	time_func Time trasformation function.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/core/DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>	DOP Evaluate the position dilution of precision (PDOP).</li><li><a href="../Multi_GNSS_Simulation_Tool/src/core/Plot_Pdop.html" class="code" title="function Plot_Pdop(out,Costellation,MultiPDOP,step_sim,Insert_data)">Plot_Pdop</a>	Plot_Pdop Plotting the Pdop fro the simulated scenarion in Open Sky.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/core/Skyplot.html" class="code" title="function Skyplot(Insert_data,step_sim,out,Skyplot_time,Skyplot_costellation,Costellation, downsample_skyplot)">Skyplot</a>	SKYPLOT Generate a skyplot with the visible satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/core/multipdop.html" class="code" title="function Multi_PDOP=multipdop(Costellation,out,kk)">multipdop</a>	multipdop Evaluate PDOP for multiple systems.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/core/urban_simulation.html" class="code" title="function urban=urban_simulation(out,Costellation,dir_az,width,height)">urban_simulation</a>	urban_simulation Perform the simulation of visible satellites in urban</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitBEI.html" class="code" title="function [SatBEI_all]=orbitBEI(eph,indiceC,Time_index)">orbitBEI</a>	orbitBEI Computes the orbits of Beidu satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGAL.html" class="code" title="function [SatGAL_all]=orbitGAL(eph,indexE,Time_index)">orbitGAL</a>	orbitGAL Computes the orbits of Galileo satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGLO.html" class="code" title="function [SatGLO_all]=orbitGLO(eph,indexR,Time_index,tetaG0)">orbitGLO</a>	orbitGLO Computes the orbits of Glonass satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGPS.html" class="code" title="function [SatGPS_all]=orbitGPS(eph,indexG,Time_index)">orbitGPS</a>	orbitGPS Computes the orbits of GPS satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satBEI.html" class="code" title="function [Absolute_SatPosBEI,SatPosBEI,el,az,PRN]=visible_satBEI(phi,lambda,h,SatBEI_all,el_mask)">visible_satBEI</a>	visible_satBEI Find the visible Beidu satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGAL.html" class="code" title="function [Absolute_SatPosGAL,SatPosGAL,el,az,PRN]=visible_satGAL(phi,lambda,h,SatGAL_all,el_mask)">visible_satGAL</a>	visible_satGAL Find the visible Galileo satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGLO.html" class="code" title="function [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask)">visible_satGLO</a>	visible_satGLO Find the visible Glonass satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGPS.html" class="code" title="function [Absolute_SatPosGPS, SatPosGPS,el,az,PRN]=visible_satGPS(phi,lambda,h,SatGPS_all,el_mask)">visible_satGPS</a>	visible_satGPS Find the visible GPS satellites.</li><li><a href="../Multi_GNSS_Simulation_Tool/src/utilities/find_last_eph.html" class="code" title="function[indiceG,indiceR,indiceC,indiceE]=find_last_eph(Eph,Insertdata)">find_last_eph</a>	find_last_eph Find the last available orbital parameters in the rinex</li><li><a href="../Multi_GNSS_Simulation_Tool/src/utilities/import_rinex.html" class="code" title="function M=import_rinex(in_path)">import_rinex</a>	import_rinex Import brdc rinex file.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% MULTI GNSS SIMULATION TOOL</span>
+0002 <span class="comment">% Path: MULTI_GNSS_Simulation_Tool.m</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% The tool provides functionalities to perform orbits computation starting</span>
+0005 <span class="comment">% from the broadcasted ephemerides parameters in brdc rinex files for GNSS</span>
+0006 <span class="comment">% satellites. The compatible sytems are GPS, Galileo, Beidu, and Glonass.</span>
+0007 <span class="comment">% Additionally, analysis of position diulition of precision (PDOP) is also</span>
+0008 <span class="comment">% possible, assessing the availablility of a particular system in a</span>
+0009 <span class="comment">% specific location and time. The tool can be used as initial module  for a</span>
+0010 <span class="comment">% GNSS software simulator as well.</span>
+0011 <span class="comment">% After configuring all the parameters in the file &quot;cfg_main.m&quot; located in</span>
+0012 <span class="comment">% the folder &quot;config&quot;, the script can be lunched.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% External M-Files required: none</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Author: Filippo Giacomo, Rizzi</span>
+0017 <span class="comment">% Email: filippo.rizzi@dlr.de</span>
+0018 <span class="comment">% Matlab ver.: Tested on 7 (R2022a)</span>
+0019 <span class="comment">% Created: 2022-12-15</span>
+0020 <span class="comment">%--------------------------------------------------------------------------</span>
+0021 <span class="comment">% TODO % Rename some variables written in Italian</span>
+0022 <span class="comment">% TODO % Describe accurately all functions with input/outptu</span>
+0023 <span class="comment">%--------------------------------------------------------------------------</span>
+0024 
+0025 clear all
+0026 close all
+0027 clc
+0028 
+0029 disp(<span class="string">'*******************************************************************'</span>)
+0030 disp(<span class="string">'**************     MULTI GNSS SIMULATION TOOL   *******************'</span>)
+0031 disp(<span class="string">'*******************************************************************'</span>)
+0032 
+0033 <span class="comment">%% Load files and functions is subdir</span>
+0034 addpath(genpath(<span class="string">'config\'</span>));
+0035 addpath(genpath(<span class="string">'input\'</span>));
+0036 addpath(genpath(<span class="string">'output\'</span>));
+0037 addpath(genpath(<span class="string">'scripts\'</span>));
+0038 addpath(genpath(<span class="string">'src\'</span>));
+0039 
+0040 <span class="comment">%% Import config parameters</span>
+0041 run(<span class="string">'cfg_main.m'</span>);
+0042 <span class="keyword">if</span> download_last_rinex==1
+0043     run(<span class="string">'DownloadRinex.m'</span>)
+0044 <span class="keyword">end</span>
+0045 <span class="comment">% Loading the input</span>
+0046 <span class="keyword">if</span> load_eph==1
+0047     load(<span class="string">'eph.mat'</span>);               <span class="comment">%To load the saved ephemeris</span>
+0048 <span class="keyword">else</span>
+0049     eph=<a href="../Multi_GNSS_Simulation_Tool/src/utilities/import_rinex.html" class="code" title="function M=import_rinex(in_path)">import_rinex</a>(in_path);     <span class="comment">%import the rinex</span>
+0050 <span class="keyword">end</span>
+0051 
+0052 <span class="comment">%% FIND LAST EPHEMERIS</span>
+0053 disp(<span class="string">'Searching eph...'</span>)
+0054 [indexG,indexR,indexC,indexE]=<a href="../Multi_GNSS_Simulation_Tool/src/utilities/find_last_eph.html" class="code" title="function[indiceG,indiceR,indiceC,indiceE]=find_last_eph(Eph,Insertdata)">find_last_eph</a>(eph,Insert_data);
+0055 
+0056 <span class="comment">%% PARAMETERS CALCULATION</span>
+0057 el_mask=deg2rad(el_mask);
+0058 dir_az=deg2rad(dir_az);
+0059 phi=deg2rad(location(1,1));   <span class="comment">%lat</span>
+0060 lambda=deg2rad(location(1,2));<span class="comment">%long</span>
+0061 h=location(1,3);              <span class="comment">%position height</span>
+0062 [JD,tetaG0,tetaG]=<a href="../Multi_GNSS_Simulation_Tool/src/common/juliandata.html" class="code" title="function [JD,tetaG0,tetaG]=juliandata(anno,mese,giorno,ora)">juliandata</a>(Insert_data(1,1),Insert_data(1,2),Insert_data(1,3),0);<span class="comment">%JD and tetaG0 at GMST</span>
+0063 initial_time=Insert_data(1,4)*3600+Insert_data(1,5)*60+Insert_data(1,6);
+0064 
+0065 <span class="comment">%% SATELLITES POSITION CALCULATION</span>
+0066 disp(<span class="string">'Computing satellites orbits...'</span>)
+0067 <span class="keyword">if</span> load_raw_orbits == 1
+0068     load(<span class="string">'input\satRawPos.mat'</span>, <span class="string">'Sat'</span>);
+0069 <span class="keyword">else</span>
+0070     kk=1;
+0071     <span class="keyword">for</span> Time_index=initial_time:step_sim:initial_time+simulation_time*3600
+0072     
+0073         [SatGPS_all]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGPS.html" class="code" title="function [SatGPS_all]=orbitGPS(eph,indexG,Time_index)">orbitGPS</a>(eph,indexG,Time_index);
+0074         Sat(kk).GPS_all=SatGPS_all;
+0075     
+0076         [SatGLO_all]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGLO.html" class="code" title="function [SatGLO_all]=orbitGLO(eph,indexR,Time_index,tetaG0)">orbitGLO</a>(eph,indexR,Time_index,tetaG0); 
+0077         Sat(kk).GLO_all=SatGLO_all;
+0078     
+0079        [SatBEI_all]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitBEI.html" class="code" title="function [SatBEI_all]=orbitBEI(eph,indiceC,Time_index)">orbitBEI</a>(eph,indexC,Time_index);
+0080         Sat(kk).BEI_all=SatBEI_all;
+0081     
+0082         [SatGAL_all]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/orbitGAL.html" class="code" title="function [SatGAL_all]=orbitGAL(eph,indexE,Time_index)">orbitGAL</a>(eph,indexE,Time_index);
+0083         Sat(kk).GAL_all=SatGAL_all;
+0084         kk=kk+1;
+0085     <span class="keyword">end</span>
+0086     save(<span class="string">'input\satRawPos.mat'</span>,<span class="string">'Sat'</span>)
+0087 <span class="keyword">end</span>
+0088 <span class="comment">%% Visible Satellites calculation</span>
+0089 <span class="keyword">if</span> load_vis_orbits == 1
+0090     load(&quot;output\satVisPos.mat&quot;, <span class="string">'out'</span>);
+0091 <span class="keyword">else</span>
+0092     kk=1;
+0093     <span class="keyword">for</span> Time_index=initial_time:step_sim:initial_time+simulation_time*3600
+0094         [Absolute_SatPosGPS, SatPosGPS,elGPS,azGPS,PRN]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGPS.html" class="code" title="function [Absolute_SatPosGPS, SatPosGPS,el,az,PRN]=visible_satGPS(phi,lambda,h,SatGPS_all,el_mask)">visible_satGPS</a>(phi,lambda,h,Sat(kk).GPS_all,el_mask);
+0095         out(kk).GPS.abs_xyz = Absolute_SatPosGPS;
+0096         out(kk).GPS.xyz=SatPosGPS;
+0097         out(kk).GPS.el=elGPS;
+0098         out(kk).GPS.az=azGPS;
+0099         out(kk).GPS.PRN=PRN;
+0100         out(kk).GPS.time=Time_index;
+0101         out(kk).GPS.date=<a href="../Multi_GNSS_Simulation_Tool/src/common/time_fun.html" class="code" title="function [UTC]=time_fun(seconds,Insert_data)">time_fun</a>(Time_index,Insert_data);
+0102         [out(kk).GPS.PDOP,out(kk).GPS.H]=<a href="../Multi_GNSS_Simulation_Tool/src/core/DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPosGPS);
+0103     
+0104        [Absolute_SatPosGLO,SatPosGLO,elGLO,azGLO,PRN]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGLO.html" class="code" title="function [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask)">visible_satGLO</a>(phi,lambda,h,Sat(kk).GLO_all,el_mask);
+0105        out(kk).GLO.abs_xyz = Absolute_SatPosGLO;
+0106        out(kk).GLO.xyz=SatPosGLO;
+0107        out(kk).GLO.el=elGLO;
+0108        out(kk).GLO.az=azGLO;
+0109        out(kk).GLO.SV=PRN;
+0110        out(kk).GLO.time=Time_index;
+0111        out(kk).GLO.date=<a href="../Multi_GNSS_Simulation_Tool/src/common/time_fun.html" class="code" title="function [UTC]=time_fun(seconds,Insert_data)">time_fun</a>(Time_index,Insert_data);
+0112        [out(kk).GLO.PDOP,out(kk).GLO.H]=<a href="../Multi_GNSS_Simulation_Tool/src/core/DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPosGLO);
+0113     
+0114         [Absolute_SatPosBEI,SatPosBEI,elBEI,azBEI,PRN]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satBEI.html" class="code" title="function [Absolute_SatPosBEI,SatPosBEI,el,az,PRN]=visible_satBEI(phi,lambda,h,SatBEI_all,el_mask)">visible_satBEI</a>(phi,lambda,h,Sat(kk).BEI_all,el_mask);
+0115         out(kk).BEI.abs_xyz = Absolute_SatPosBEI;
+0116         out(kk).BEI.xyz=SatPosBEI;
+0117         out(kk).BEI.el=elBEI;
+0118         out(kk).BEI.az=azBEI;
+0119         out(kk).BEI.PRN=PRN;
+0120         out(kk).BEI.time=Time_index;   
+0121         out(kk).BEI.date=<a href="../Multi_GNSS_Simulation_Tool/src/common/time_fun.html" class="code" title="function [UTC]=time_fun(seconds,Insert_data)">time_fun</a>(Time_index,Insert_data);
+0122         [out(kk).BEI.PDOP,out(kk).BEI.H]=<a href="../Multi_GNSS_Simulation_Tool/src/core/DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPosBEI);
+0123     
+0124         [Absolute_SatPosGAL,SatPosGAL,elGAL,azGAL,PRN]=<a href="../Multi_GNSS_Simulation_Tool/src/processor/visible_satGAL.html" class="code" title="function [Absolute_SatPosGAL,SatPosGAL,el,az,PRN]=visible_satGAL(phi,lambda,h,SatGAL_all,el_mask)">visible_satGAL</a>(phi,lambda,h,Sat(kk).GAL_all,el_mask);
+0125         out(kk).GAL.abs_xyz = Absolute_SatPosGAL;
+0126         out(kk).GAL.xyz=SatPosGAL;
+0127         out(kk).GAL.el=elGAL;
+0128         out(kk).GAL.az=azGAL;
+0129         out(kk).GAL.SV=PRN;
+0130         out(kk).GAL.time=Time_index; 
+0131         out(kk).GAL.date=<a href="../Multi_GNSS_Simulation_Tool/src/common/time_fun.html" class="code" title="function [UTC]=time_fun(seconds,Insert_data)">time_fun</a>(Time_index,Insert_data);
+0132         [out(kk).GAL.PDOP,out(kk).GAL.H]=<a href="../Multi_GNSS_Simulation_Tool/src/core/DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPosGAL);
+0133         kk=kk+1;
+0134     <span class="keyword">end</span>
+0135     
+0136     <span class="comment">% Save the satellites position at the specified location and time interval</span>
+0137     save(<span class="string">'output\satVisPos.mat'</span>,<span class="string">'out'</span>)
+0138 <span class="keyword">end</span>
+0139 <span class="comment">%% PLOT THE PDOP OPEN SKY</span>
+0140 <span class="keyword">if</span> enable_pdop ==1
+0141     disp(<span class="string">'OPEN SKY VALUES:'</span>)
+0142     <span class="keyword">for</span> kk=1:length(out)
+0143         MultiPDOP(1,kk)=<a href="../Multi_GNSS_Simulation_Tool/src/core/multipdop.html" class="code" title="function Multi_PDOP=multipdop(Costellation,out,kk)">multipdop</a>(Costellation,out,kk);
+0144     <span class="keyword">end</span>
+0145     <a href="../Multi_GNSS_Simulation_Tool/src/core/Plot_Pdop.html" class="code" title="function Plot_Pdop(out,Costellation,MultiPDOP,step_sim,Insert_data)">Plot_Pdop</a>(out,Costellation,MultiPDOP,step_sim,Insert_data)
+0146 <span class="keyword">end</span>
+0147 
+0148 <span class="comment">% Plot the skyplot</span>
+0149 <span class="keyword">if</span> enable_skyplot==1
+0150     disp(<span class="string">'Plotting open skyplot...'</span>)
+0151     <a href="../Multi_GNSS_Simulation_Tool/src/core/Skyplot.html" class="code" title="function Skyplot(Insert_data,step_sim,out,Skyplot_time,Skyplot_costellation,Costellation, downsample_skyplot)">Skyplot</a>(Insert_data,step_sim,out,Skyplot_time,Skyplot_costellation,Costellation, skyplot_downsample)
+0152 <span class="keyword">end</span>
+0153 
+0154 <span class="comment">%% URBAN SIMULATION</span>
+0155 <span class="comment">% Return Struct with satellites</span>
+0156 <span class="keyword">if</span> enable_urban_sim==1
+0157     urban=<a href="../Multi_GNSS_Simulation_Tool/src/core/urban_simulation.html" class="code" title="function urban=urban_simulation(out,Costellation,dir_az,width,height)">urban_simulation</a>(out,Costellation,dir_az,width,height);
+0158     <span class="comment">% Plot_Pdop_urban(urban,Costellation,multi_urban,step_sim,Insert_data)</span>
+0159     <span class="keyword">if</span> enable_pdop==1
+0160         disp(<span class="string">'URBAN SIMULATION VALUES:'</span>)
+0161         <span class="keyword">for</span> kk=1:length(urban)
+0162             multi_urban(1,kk)=<a href="../Multi_GNSS_Simulation_Tool/src/core/multipdop.html" class="code" title="function Multi_PDOP=multipdop(Costellation,out,kk)">multipdop</a>(Costellation,urban,kk);
+0163         
+0164         <span class="keyword">end</span>
+0165 
+0166     
+0167         <a href="../Multi_GNSS_Simulation_Tool/src/core/Plot_Pdop.html" class="code" title="function Plot_Pdop(out,Costellation,MultiPDOP,step_sim,Insert_data)">Plot_Pdop</a>(urban,Costellation,multi_urban,step_sim,Insert_data)
+0168     <span class="keyword">end</span>
+0169     <span class="comment">% Skyplot</span>
+0170     <span class="keyword">if</span> enable_skyplot==1
+0171         disp(<span class="string">'Plotting urban skyplot...'</span>)
+0172         <a href="../Multi_GNSS_Simulation_Tool/src/core/Skyplot.html" class="code" title="function Skyplot(Insert_data,step_sim,out,Skyplot_time,Skyplot_costellation,Costellation, downsample_skyplot)">Skyplot</a>(Insert_data,step_sim,urban,Skyplot_time,Skyplot_costellation,Costellation,skyplot_downsample)
+0173     <span class="keyword">end</span>
+0174 <span class="keyword">end</span>
+0175 disp(<span class="string">'Simulation completed'</span>)
+0176 disp(<span class="string">'*******************************************************************'</span>)</pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

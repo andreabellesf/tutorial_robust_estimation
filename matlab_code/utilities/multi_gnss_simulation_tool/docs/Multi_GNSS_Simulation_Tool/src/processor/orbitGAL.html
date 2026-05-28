@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of orbitGAL</title>
+  <meta name="keywords" content="orbitGAL">
+  <meta name="description" content="orbitGAL Computes the orbits of Galileo satellites.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">processor</a> &gt; orbitGAL.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\processor&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>orbitGAL
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>orbitGAL Computes the orbits of Galileo satellites.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [SatGAL_all]=orbitGAL(eph,indexE,Time_index) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> orbitGAL Computes the orbits of Galileo satellites.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="bisection.html" class="code" title="function [x,e,iter]=bisection(f,a,b,err,itermax)">bisection</a>	bisection Bisection method for equation root finding.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [SatGAL_all]=orbitGAL(eph,indexE,Time_index)</a>
+0002 <span class="comment">% orbitGAL Computes the orbits of Galileo satellites.</span>
+0003 
+0004 <span class="comment">%% Parameters</span>
+0005 pi=3.1415926535898;
+0006 mu=3.986004418e14;<span class="comment">%[m^3/s^2]</span>
+0007 omegae=7.2921151467e-5;<span class="comment">%v[rad/s]</span>
+0008 [n,~]=size(indexE); 
+0009 <span class="comment">%% Computing Position</span>
+0010 <span class="keyword">for</span> k=1:n
+0011     <span class="keyword">if</span> indexE(k,2)~=0
+0012     t0e=eph(indexE(k,2),20); <span class="comment">%Time in the week GAL [s]</span>
+0013     A=eph(indexE(k,2),19)^2;
+0014     n0=sqrt(mu/A^3);
+0015     tk=Time_index-((eph(indexE(k,2),6)*3600+eph(indexE(k,2),7)*60+eph(indexE(k,2),8)));
+0016     deltan=eph(indexE(k,2),14);
+0017     mean_motion=n0+deltan;
+0018     M0=eph(indexE(k,2),15);
+0019     M=M0+mean_motion*tk;<span class="comment">%Mean anomaly</span>
+0020     ecc=eph(indexE(k,2),17);
+0021     f=@(x)x-ecc.*sin(x)-M;
+0022     [E,~,~]=<a href="bisection.html" class="code" title="function [x,e,iter]=bisection(f,a,b,err,itermax)">bisection</a>(f,-(abs(M)+1),abs(M)+1,1e-18,200);<span class="comment">%Eccentric anomaly</span>
+0023     senov=sqrt(1-ecc^2)*sin(E)/(1-ecc*cos(E));
+0024     cosenov=(cos(E)-ecc)/(1-ecc*cos(E));
+0025     v=atan2(senov,cosenov);<span class="comment">%true anomaly</span>
+0026     omega=eph(indexE(k,2),26);
+0027     PHI=v+omega ;<span class="comment">%argument of latitude</span>
+0028     Cus=eph(indexE(k,2),18);
+0029     Cuc=eph(indexE(k,2),16);
+0030     Crs=eph(indexE(k,2),13);
+0031     Crc=eph(indexE(k,2),25);
+0032     Cis=eph(indexE(k,2),23);
+0033     Cic=eph(indexE(k,2),21);
+0034     du=Cus*sin(2*PHI)+Cuc*cos(2*PHI);
+0035     dr=Crs*sin(2*PHI)+Crc*cos(2*PHI);
+0036     di=Cis*sin(2*PHI)+Cic*cos(2*PHI);
+0037     u=PHI+du; <span class="comment">%corrected argument of latitude</span>
+0038     r=A*(1-ecc*cos(E))+dr;
+0039     i0=eph(indexE(k,2),24);
+0040     idot=eph(indexE(k,2),28);
+0041     i=i0+di+idot*tk ;<span class="comment">%corrected inclination</span>
+0042     x1=r*cos(u) ;<span class="comment">%position in orbital plane</span>
+0043     y1=r*sin(u); <span class="comment">%positin in orbital plane</span>
+0044     OMEGA0=eph(indexE(k,2),22);
+0045     OMEGADOT=eph(indexE(k,2),27);
+0046     OMEGA=OMEGA0+(OMEGADOT-omegae)*tk-omegae*t0e; 
+0047     SatGAL_all(1,k)=x1*cos(OMEGA)-y1*cos(i)*sin(OMEGA);<span class="comment">%[m]</span>
+0048     SatGAL_all(2,k)=x1*sin(OMEGA)+y1*cos(i)*cos(OMEGA);<span class="comment">%[m]</span>
+0049     SatGAL_all(3,k)=y1*sin(i);<span class="comment">%[m]</span>
+0050     <span class="keyword">end</span>
+0051 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

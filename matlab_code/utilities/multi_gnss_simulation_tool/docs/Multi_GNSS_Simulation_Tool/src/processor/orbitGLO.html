@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of orbitGLO</title>
+  <meta name="keywords" content="orbitGLO">
+  <meta name="description" content="orbitGLO Computes the orbits of Glonass satellites.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">processor</a> &gt; orbitGLO.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\processor&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>orbitGLO
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>orbitGLO Computes the orbits of Glonass satellites.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [SatGLO_all]=orbitGLO(eph,indexR,Time_index,tetaG0) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> orbitGLO Computes the orbits of Glonass satellites.
+% Parameters</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/src/common/In2Pz.html" class="code" title="function [X,Y,Z]=In2Pz(tetaG0,x,y,z,time)">In2Pz</a>	In2Pz Transform ECI coordinates to ECEF(Pz90.02)</li><li><a href="../../../Multi_GNSS_Simulation_Tool/src/common/Pz2In.html" class="code" title="function [X,Y,Z,Vx,Vy,Vz,Axsm,Aysm,Azsm]=Pz2In(tetaGe,x,y,z,vx,vy,vz,ax,ay,az)">Pz2In</a>	PZ2In Transform ECEF(PZ90.02) coordinates to ECI</li><li><a href="odefun.html" class="code" title="function dydt = odefun(t,y,Axsm,Aysm,Azsm)">odefun</a>	odefun Implements integration of Ordinary differential equation (ODE)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [SatGLO_all]=orbitGLO(eph,indexR,Time_index,tetaG0)</a>
+0002 <span class="comment">% orbitGLO Computes the orbits of Glonass satellites.</span>
+0003 <span class="comment">%% Parameters</span>
+0004 pi=3.1415926535898;
+0005 omegae=0.7292115e-4;<span class="comment">%[rad/s]</span>
+0006 <span class="comment">%% Computing Position</span>
+0007 [n,~]=size(indexR);  
+0008 <span class="keyword">for</span> k=1:n
+0009     
+0010      <span class="keyword">if</span> indexR(k,2)~=0
+0011          te=((eph(indexR(k,2),6)*3600+eph(indexR(k,2),7)*60+eph(indexR(k,2),8)));
+0012          tetaGe=tetaG0+(omegae)*(te);
+0013          x=eph(indexR(k,2),12);
+0014          vx=eph(indexR(k,2),13);
+0015          ax=eph(indexR(k,2),14);
+0016          yy=eph(indexR(k,2),16);
+0017          vy=eph(indexR(k,2),17);
+0018          ay=eph(indexR(k,2),18);
+0019          z=eph(indexR(k,2),20);
+0020          vz=eph(indexR(k,2),21);
+0021          az=eph(indexR(k,2),22);
+0022          [x1,y1,z1,vx1,vy1,vz1,Axsm,Aysm,Azsm]=<a href="../../../Multi_GNSS_Simulation_Tool/src/common/Pz2In.html" class="code" title="function [X,Y,Z,Vx,Vy,Vz,Axsm,Aysm,Azsm]=Pz2In(tetaGe,x,y,z,vx,vy,vz,ax,ay,az)">Pz2In</a>(tetaGe,x,yy,z,vx,vy,vz,ax,ay,az);
+0023          t=Time_index-te;
+0024          [~,sol]=ode45(@(t,y)<a href="odefun.html" class="code" title="function dydt = odefun(t,y,Axsm,Aysm,Azsm)">odefun</a>(t,y,Axsm,Aysm,Azsm),[0 t],[x1,y1,z1,vx1,vy1,vz1]);
+0025          X1=sol(<span class="keyword">end</span>,1);
+0026          Y1=sol(<span class="keyword">end</span>,2);
+0027          Z1=sol(<span class="keyword">end</span>,3);        
+0028          [XX,YY,ZZ]=<a href="../../../Multi_GNSS_Simulation_Tool/src/common/In2Pz.html" class="code" title="function [X,Y,Z]=In2Pz(tetaG0,x,y,z,time)">In2Pz</a>(tetaG0,X1,Y1,Z1,Time_index);
+0029          SatGLO_all(1,k)=XX*1000;<span class="comment">%Pz90  [m]</span>
+0030          SatGLO_all(2,k)=YY*1000;<span class="comment">%Pz90  [m]</span>
+0031          SatGLO_all(3,k)=ZZ*1000;<span class="comment">%Pz90  [m]</span>
+0032      <span class="keyword">end</span>
+0033 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of urban_simulation</title>
+  <meta name="keywords" content="urban_simulation">
+  <meta name="description" content="urban_simulation Perform the simulation of visible satellites in urban">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">core</a> &gt; urban_simulation.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\core&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>urban_simulation
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>urban_simulation Perform the simulation of visible satellites in urban</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function urban=urban_simulation(out,Costellation,dir_az,width,height) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> urban_simulation Perform the simulation of visible satellites in urban
+ environment.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>	DOP Evaluate the position dilution of precision (PDOP).</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function urban=urban_simulation(out,Costellation,dir_az,width,height)</a>
+0002 <span class="comment">% urban_simulation Perform the simulation of visible satellites in urban</span>
+0003 <span class="comment">% environment.</span>
+0004 
+0005 dir=dir_az;
+0006 <span class="keyword">if</span> Costellation(1,1)==1
+0007     <span class="keyword">for</span> istant=1:length(out)
+0008         in=1;
+0009     <span class="keyword">for</span> k=1:(length(out(istant).GPS.el)-1)
+0010         el_sat=(out(istant).GPS.el(1,k));
+0011         theta=(out(istant).GPS.az(1,k));
+0012         theta=theta-dir;
+0013         dist=abs((width/2)/sin(theta));
+0014         alpha_el=atan(height/dist);
+0015         <span class="keyword">if</span> el_sat&gt;=alpha_el
+0016             theta=theta+dir;
+0017             urban(istant).GPS.PRN{1,in}=out(istant).GPS.PRN{1,k};
+0018             urban(istant).GPS.el(1,in)=el_sat;
+0019             urban(istant).GPS.az(1,in)=theta;
+0020             urban(istant).GPS.time=out(istant).GPS.time;
+0021             urban(istant).GPS.date=out(istant).GPS.date;
+0022             urban(istant).GPS.xyz(:,in)=out(istant).GPS.xyz(:,k);
+0023             in=in+1;
+0024         <span class="keyword">end</span>
+0025     <span class="keyword">end</span>
+0026         <span class="comment">%% Invalid</span>
+0027         invalid={<span class="string">'invalid'</span>};
+0028         urban(istant).GPS.el(1,in)=NaN;
+0029         urban(istant).GPS.az(1,in)=NaN;
+0030         urban(istant).GPS.PRN{1,in}=invalid;
+0031         urban(istant).GPS.xyz(:,in)=[0;0;0];
+0032         urban(istant).GPS.time=out(istant).GPS.time;
+0033         urban(istant).GPS.date=out(istant).GPS.date;
+0034         SatPos=urban(istant).GPS.xyz;
+0035         [urban(istant).GPS.PDOP,urban(istant).GPS.H]=<a href="DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPos);
+0036 
+0037     
+0038     <span class="keyword">end</span>
+0039 <span class="keyword">end</span>
+0040 <span class="keyword">if</span> Costellation(1,2)==1
+0041     <span class="keyword">for</span> istant=1:length(out)
+0042         in=1;
+0043     <span class="keyword">for</span> k=1:(length(out(istant).GLO.el)-1)
+0044         el_sat=(out(istant).GLO.el(1,k));
+0045         theta=(out(istant).GLO.az(1,k));
+0046         theta=theta-dir;
+0047         dist=abs((width/2)/sin(theta));
+0048         alpha_el=atan(height/dist);
+0049         <span class="keyword">if</span> el_sat&gt;=alpha_el
+0050             theta=theta+dir;
+0051             urban(istant).GLO.SV{1,in}=out(istant).GLO.SV{1,k};
+0052             urban(istant).GLO.el(1,in)=el_sat;
+0053             urban(istant).GLO.az(1,in)=theta;
+0054             urban(istant).GLO.time=out(istant).GLO.time;
+0055             urban(istant).GLO.date=out(istant).GLO.date;
+0056             urban(istant).GLO.xyz(:,in)=out(istant).GLO.xyz(:,k);
+0057             in=in+1;
+0058         <span class="keyword">end</span>
+0059     <span class="keyword">end</span>
+0060             <span class="comment">%% Invalid</span>
+0061         invalid={<span class="string">'invalid'</span>};
+0062         urban(istant).GLO.el(1,in)=NaN;
+0063         urban(istant).GLO.az(1,in)=NaN;
+0064         urban(istant).GLO.SV{1,in}=invalid;
+0065         urban(istant).GLO.xyz(:,in)=[0;0;0];
+0066         urban(istant).GLO.time=out(istant).GLO.time;
+0067         urban(istant).GLO.date=out(istant).GLO.date;
+0068         SatPos=urban(istant).GLO.xyz;
+0069         [urban(istant).GLO.PDOP,urban(istant).GLO.H]=<a href="DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPos);
+0070 
+0071     <span class="keyword">end</span>
+0072 <span class="keyword">end</span>
+0073 <span class="keyword">if</span> Costellation(1,3)==1
+0074     <span class="keyword">for</span> istant=1:length(out)
+0075         in=1;
+0076     <span class="keyword">for</span> k=1:(length(out(istant).BEI.el)-1)
+0077         el_sat=(out(istant).BEI.el(1,k));
+0078         theta=(out(istant).BEI.az(1,k));
+0079         theta=theta-dir;
+0080         dist=abs((width/2)/sin(theta));
+0081         alpha_el=atan(height/dist);
+0082         <span class="keyword">if</span> el_sat&gt;=alpha_el
+0083             theta=theta+dir;
+0084             urban(istant).BEI.PRN{1,in}=out(istant).BEI.PRN{1,k};
+0085             urban(istant).BEI.el(1,in)=el_sat;
+0086             urban(istant).BEI.az(1,in)=theta;
+0087             urban(istant).BEI.time=out(istant).BEI.time;
+0088             urban(istant).BEI.date=out(istant).BEI.date;
+0089             urban(istant).BEI.xyz(:,in)=out(istant).BEI.xyz(:,k);
+0090             in=in+1;
+0091         <span class="keyword">end</span>
+0092     <span class="keyword">end</span>
+0093             <span class="comment">%% Invalid</span>
+0094         invalid={<span class="string">'invalid'</span>};
+0095         urban(istant).BEI.el(1,in)=NaN;
+0096         urban(istant).BEI.az(1,in)=NaN;
+0097         urban(istant).BEI.PRN{1,in}=invalid;
+0098         urban(istant).BEI.xyz(:,in)=[0;0;0];
+0099         urban(istant).BEI.time=out(istant).BEI.time;
+0100         urban(istant).BEI.date=out(istant).BEI.date;
+0101         SatPos=urban(istant).BEI.xyz;
+0102         [urban(istant).BEI.PDOP,urban(istant).BEI.H]=<a href="DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPos);
+0103 
+0104     <span class="keyword">end</span>
+0105 <span class="keyword">end</span>
+0106 <span class="keyword">if</span> Costellation(1,4)==1
+0107     <span class="keyword">for</span> istant=1:length(out)
+0108         in=1;
+0109     <span class="keyword">for</span> k=1:(length(out(istant).GAL.el)-1)
+0110         el_sat=(out(istant).GAL.el(1,k));
+0111         theta=(out(istant).GAL.az(1,k));
+0112         theta=theta-dir;
+0113         dist=abs((width/2)/sin(theta));
+0114         alpha_el=atan(height/dist);
+0115         <span class="keyword">if</span> el_sat&gt;=alpha_el
+0116             theta=theta+dir;
+0117             urban(istant).GAL.SV{1,in}=out(istant).GAL.SV{1,k};
+0118             urban(istant).GAL.el(1,in)=el_sat;
+0119             urban(istant).GAL.az(1,in)=theta;
+0120             urban(istant).GAL.time=out(istant).GAL.time;
+0121             urban(istant).GAL.date=out(istant).GAL.date;
+0122             urban(istant).GAL.xyz(:,in)=out(istant).GAL.xyz(:,k);
+0123             in=in+1;
+0124         <span class="keyword">end</span>
+0125     <span class="keyword">end</span>
+0126             <span class="comment">%% Invalid</span>
+0127         invalid={<span class="string">'invalid'</span>};
+0128         urban(istant).GAL.el(1,in)=NaN;
+0129         urban(istant).GAL.az(1,in)=NaN;
+0130         urban(istant).GAL.PRN{1,in}=invalid;
+0131         urban(istant).GAL.xyz(:,in)=[0;0;0];
+0132         urban(istant).GAL.time=out(istant).GAL.time;
+0133         urban(istant).GAL.date=out(istant).GAL.date;
+0134         SatPos=urban(istant).GAL.xyz;
+0135         [urban(istant).GAL.PDOP,urban(istant).GAL.H]=<a href="DOP.html" class="code" title="function [PDOP,H]=DOP(SatPos)">DOP</a>(SatPos);
+0136 
+0137     <span class="keyword">end</span>
+0138 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

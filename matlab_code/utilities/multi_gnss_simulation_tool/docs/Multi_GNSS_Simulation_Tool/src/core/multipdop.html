@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of multipdop</title>
+  <meta name="keywords" content="multipdop">
+  <meta name="description" content="multipdop Evaluate PDOP for multiple systems.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">core</a> &gt; multipdop.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\core&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>multipdop
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>multipdop Evaluate PDOP for multiple systems.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function Multi_PDOP=multipdop(Costellation,out,kk) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> multipdop Evaluate PDOP for multiple systems.
+   Multi_PDOP=multipdop(Costellation,out,kk)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Multi_PDOP=multipdop(Costellation,out,kk)</a>
+0002 <span class="comment">% multipdop Evaluate PDOP for multiple systems.</span>
+0003 <span class="comment">%   Multi_PDOP=multipdop(Costellation,out,kk)</span>
+0004 
+0005 <span class="keyword">if</span> Costellation(1,1)==1
+0006     gps=<span class="string">'G'</span>;
+0007 <span class="keyword">else</span>
+0008     gps=<span class="string">'0'</span>;
+0009 <span class="keyword">end</span>
+0010 <span class="keyword">if</span> Costellation(1,2)==1
+0011     glo=<span class="string">'R'</span>;
+0012 <span class="keyword">else</span>
+0013     glo=<span class="string">'0'</span>;
+0014 <span class="keyword">end</span>
+0015 <span class="keyword">if</span> Costellation(1,3)==1
+0016     bei=<span class="string">'C'</span>;
+0017 <span class="keyword">else</span>
+0018     bei=<span class="string">'0'</span>;
+0019 <span class="keyword">end</span>
+0020 <span class="keyword">if</span> Costellation(1,4)==1
+0021     gal=<span class="string">'E'</span>;
+0022 <span class="keyword">else</span>
+0023     gal=<span class="string">'0'</span>;
+0024 <span class="keyword">end</span>
+0025 C_string=strcat(gps,glo, bei, gal);
+0026 <span class="keyword">switch</span> C_string
+0027     <span class="keyword">case</span> <span class="string">'GR00'</span>
+0028         HGPS=out(kk).GPS.H;
+0029         HGLO=out(kk).GLO.H;
+0030         H=[HGPS;HGLO];
+0031         n=rank(H);
+0032         <span class="keyword">if</span> n&lt;3
+0033             Multi_PDOP=NaN;
+0034         <span class="keyword">else</span>
+0035         G=inv(H'*H);
+0036         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0037         <span class="keyword">end</span>
+0038     <span class="keyword">case</span> <span class="string">'G0C0'</span>
+0039         HGPS=out(kk).GPS.H;
+0040         HBEI=out(kk).BEI.H;
+0041         H=[HGPS;HBEI];
+0042         n=rank(H);
+0043         <span class="keyword">if</span> n&lt;3
+0044             Multi_PDOP=NaN;
+0045         <span class="keyword">else</span>
+0046         G=inv(H'*H);
+0047         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0048         <span class="keyword">end</span>
+0049 
+0050     <span class="keyword">case</span> <span class="string">'G00E'</span>
+0051         HGPS=out(kk).GPS.H;
+0052         HGAL=out(kk).GAL.H;
+0053         H=[HGPS;HGAL];
+0054         n=rank(H);
+0055         <span class="keyword">if</span> n&lt;3
+0056             Multi_PDOP=NaN;
+0057         <span class="keyword">else</span>
+0058         G=inv(H'*H);
+0059         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0060         <span class="keyword">end</span>
+0061     <span class="keyword">case</span> <span class="string">'0RC0'</span>
+0062         HGLO=out(kk).GLO.H;
+0063         HBEI=out(kk).BEI.H;
+0064         H=[HGLO;HBEI];
+0065         n=rank(H);
+0066         <span class="keyword">if</span> n&lt;3
+0067             Multi_PDOP=NaN;
+0068         <span class="keyword">else</span>
+0069         G=inv(H'*H);
+0070         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0071         <span class="keyword">end</span>
+0072 
+0073     <span class="keyword">case</span> <span class="string">'0R0E'</span>
+0074         HGLO=out(kk).GLO.H;
+0075         HGAL=out(kk).GAL.H;
+0076         H=[HGLO;HGAL];
+0077         n=rank(H);
+0078         <span class="keyword">if</span> n&lt;3
+0079             Multi_PDOP=NaN;
+0080         <span class="keyword">else</span>
+0081         G=inv(H'*H);
+0082         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0083         <span class="keyword">end</span>
+0084 
+0085     <span class="keyword">case</span> <span class="string">'00CE'</span>
+0086         HBEI=out(kk).BEI.H;
+0087         HGAL=out(kk).GAL.H;
+0088         H=[HBEI;HGAL];
+0089         n=rank(H);
+0090         <span class="keyword">if</span> n&lt;3
+0091             Multi_PDOP=NaN;
+0092         <span class="keyword">else</span>
+0093         G=inv(H'*H);
+0094         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0095         <span class="keyword">end</span>
+0096 
+0097     <span class="keyword">case</span> <span class="string">'GRC0'</span>
+0098         HGPS=out(kk).GPS.H;
+0099         HGLO=out(kk).GLO.H;
+0100         HBEI=out(kk).BEI.H;
+0101         H=[HGPS;HGLO;HBEI];
+0102         n=rank(H);
+0103         <span class="keyword">if</span> n&lt;3
+0104             Multi_PDOP=NaN;
+0105         <span class="keyword">else</span>
+0106         G=inv(H'*H);
+0107         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0108         <span class="keyword">end</span>
+0109 
+0110     <span class="keyword">case</span> <span class="string">'GR0E'</span>
+0111         HGPS=out(kk).GPS.H;
+0112         HGLO=out(kk).GLO.H;
+0113         HGAL=out(kk).GAL.H;
+0114         H=[HGPS;HGLO;HGAL];
+0115         n=rank(H);
+0116         <span class="keyword">if</span> n&lt;3
+0117             Multi_PDOP=NaN;
+0118         <span class="keyword">else</span>
+0119         G=inv(H'*H);
+0120         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0121         <span class="keyword">end</span>
+0122 
+0123     <span class="keyword">case</span> <span class="string">'G0CE'</span>
+0124         HGPS=out(kk).GPS.H;
+0125         HBEI=out(kk).BEI.H;
+0126         HGAL=out(kk).GAL.H;
+0127         H=[HGPS;HBEI;HGAL];
+0128         n=rank(H);
+0129         <span class="keyword">if</span> n&lt;3
+0130             Multi_PDOP=NaN;
+0131         <span class="keyword">else</span>
+0132         G=inv(H'*H);
+0133         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0134         <span class="keyword">end</span>
+0135 
+0136     <span class="keyword">case</span> <span class="string">'0RCE'</span>
+0137         HGLO=out(kk).GLO.H;
+0138         HBEI=out(kk).BEI.H;
+0139         HGAL=out(kk).GAL.H;
+0140         H=[HGLO;HBEI;HGAL];
+0141         n=rank(H);
+0142         <span class="keyword">if</span> n&lt;3
+0143             Multi_PDOP=NaN;
+0144         <span class="keyword">else</span>
+0145         G=inv(H'*H);
+0146         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0147         <span class="keyword">end</span>
+0148 
+0149     <span class="keyword">case</span> <span class="string">'GRCE'</span>
+0150         HGPS=out(kk).GPS.H;
+0151         HGLO=out(kk).GLO.H;
+0152         HBEI=out(kk).BEI.H;
+0153         HGAL=out(kk).GAL.H;
+0154         H=[HGPS;HGLO;HBEI;HGAL];
+0155         n=rank(H);
+0156         <span class="keyword">if</span> n&lt;3
+0157             Multi_PDOP=NaN;
+0158         <span class="keyword">else</span>
+0159         G=inv(H'*H);
+0160         Multi_PDOP=sqrt(G(1,1)+G(2,2)+G(3,3));
+0161         <span class="keyword">end</span>
+0162 
+0163     <span class="keyword">otherwise</span>
+0164         disp(<span class="string">'Multi PDOP DISABLED'</span>)
+0165         Multi_PDOP=0;
+0166 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

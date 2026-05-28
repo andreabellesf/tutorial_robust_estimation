@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Plot_Pdop_urban</title>
+  <meta name="keywords" content="Plot_Pdop_urban">
+  <meta name="description" content="Plot_Pdop_urban Plot the Pdop for the simulated scenarion in urban">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">core</a> &gt; Plot_Pdop_urban.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\core&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>Plot_Pdop_urban
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Plot_Pdop_urban Plot the Pdop for the simulated scenarion in urban</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function Plot_Pdop_urban(out,Costellation,MultiPDOP,step_sim,Insert_data) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Plot_Pdop_urban Plot the Pdop for the simulated scenarion in urban
+ environment</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Plot_Pdop_urban(out,Costellation,MultiPDOP,step_sim,Insert_data)</a>
+0002 <span class="comment">% Plot_Pdop_urban Plot the Pdop for the simulated scenarion in urban</span>
+0003 <span class="comment">% environment</span>
+0004 
+0005 <span class="keyword">for</span> ii=1:length(out)
+0006     <span class="keyword">if</span> Costellation(1,1)==1
+0007         Pdop_GPS(1,ii)=out(ii).GPS.PDOP;
+0008 
+0009     <span class="keyword">end</span>
+0010     <span class="keyword">if</span> Costellation(1,2)==1
+0011         Pdop_GLO(1,ii)=out(ii).GLO.PDOP;
+0012 
+0013 
+0014     <span class="keyword">end</span>
+0015     <span class="keyword">if</span> Costellation(1,3)==1
+0016         Pdop_BEI(1,ii)=out(ii).BEI.PDOP;
+0017 
+0018 
+0019     <span class="keyword">end</span>
+0020     <span class="keyword">if</span> Costellation(1,4)==1
+0021         Pdop_GAL(1,ii)=out(ii).GAL.PDOP;
+0022 
+0023 
+0024     <span class="keyword">end</span>
+0025 <span class="keyword">end</span>
+0026 <span class="keyword">if</span> Costellation(1,1)==1
+0027     disp(<span class="string">'Mean of urban GPS pdop'</span>)
+0028     nanmean(Pdop_GPS)
+0029 <span class="keyword">end</span>
+0030 <span class="keyword">if</span> Costellation(1,2)==1
+0031     disp(<span class="string">'Mean of urban Glonass pdop'</span>)
+0032     nanmean(Pdop_GLO)
+0033 <span class="keyword">end</span>
+0034 <span class="keyword">if</span> Costellation(1,3)==1
+0035     disp(<span class="string">'Mean of urban Beidou pdop'</span>)
+0036     nanmean(Pdop_BEI)
+0037 <span class="keyword">end</span>
+0038 <span class="keyword">if</span> Costellation(1,4)==1
+0039     disp(<span class="string">'Mean of urban Galileo pdop'</span>)
+0040     nanmean(Pdop_GAL)
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="comment">%% Figure PDOP and Total Visible SATELLITES</span>
+0044 <span class="comment">% ax=[0:length(out)-1];</span>
+0045 s1=Insert_data(1,4)*3600;
+0046 s2=(Insert_data(1,5))*60;
+0047 s3=Insert_data(1,6);
+0048 ax=[seconds(s1+s2+s3):seconds(step_sim):seconds(s1+s2+s3+((length(out)-1)*step_sim))];
+0049 <span class="comment">% ax=[(s1+s2+s3):(step_sim*60):(s1+s2+s3+((length(out)-1)*step_sim*60))];</span>
+0050 <span class="comment">% for kk=1:length(ax)</span>
+0051 <span class="comment">%     if ax(kk)&gt;=86400</span>
+0052 <span class="comment">%         ax(kk)=ax(kk)-86400;</span>
+0053 <span class="comment">%     end</span>
+0054 <span class="comment">% end</span>
+0055 <span class="comment">% ax=seconds(ax)%[seconds(s1+s2+s3):seconds(step_sim*60):seconds(s1+s2+s3+((length(out)-1)*step_sim*60))];</span>
+0056 
+0057 figure
+0058 subplot(2,1,1)
+0059 <span class="keyword">if</span> Costellation(1,1)==1
+0060    plot(ax,Pdop_GPS,<span class="string">'k'</span>,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0061    text(1,0.95,<span class="string">'\sl Gps'</span>,<span class="string">'Color'</span>,<span class="string">'k'</span>,<span class="string">'Units'</span>,<span class="string">'normalized'</span>)
+0062 <span class="keyword">end</span>
+0063 hold on
+0064 <span class="keyword">if</span> Costellation(1,2)
+0065    plot(ax,Pdop_GLO,<span class="string">'b'</span>,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0066    text(1,0.9,<span class="string">'\sl Glonass'</span>,<span class="string">'Color'</span>,<span class="string">'b'</span>,<span class="string">'Units'</span>,<span class="string">'normalized'</span>)
+0067 <span class="keyword">end</span>
+0068 <span class="keyword">if</span> Costellation(1,3)==1
+0069     plot(ax,Pdop_BEI,<span class="string">'g'</span>,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0070     text(1,0.85,<span class="string">'\sl Beidou'</span>,<span class="string">'Color'</span>,<span class="string">'g'</span>,<span class="string">'Units'</span>,<span class="string">'normalized'</span>)
+0071 <span class="keyword">end</span>
+0072 <span class="keyword">if</span> Costellation(1,4)==1
+0073     plot(ax,Pdop_GAL,<span class="string">'m'</span>,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0074     text(1,0.8,<span class="string">'\sl Galileo'</span>,<span class="string">'Color'</span>,<span class="string">'m'</span>,<span class="string">'Units'</span>,<span class="string">'normalized'</span>)
+0075 <span class="keyword">end</span>
+0076 <span class="keyword">if</span> sum(Costellation)&gt;1
+0077    plot(ax,MultiPDOP,<span class="string">'r'</span>,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0078    text(1,1,<span class="string">'\sl MULTI'</span>,<span class="string">'Color'</span>,<span class="string">'r'</span>,<span class="string">'Units'</span>,<span class="string">'normalized'</span>)
+0079 <span class="keyword">end</span>
+0080 grid on
+0081 grid minor
+0082 title(<span class="string">'PDOP in Urban Enviroment'</span>)
+0083 xlabel(<span class="string">'Day Time [dd:hh:mm:ss]'</span>)
+0084 ylabel(<span class="string">'Pdop [m]'</span>)
+0085 ylim([0 50])
+0086 
+0087 <span class="keyword">for</span> ii=1:length(out)
+0088     Sat_num(ii)=0;
+0089     <span class="keyword">if</span> Costellation(1,1)==1
+0090         Sat_num_GPS(ii)=length(out(ii).GPS.el)-1;
+0091          Sat_num(ii)=Sat_num(ii)+length(out(ii).GPS.el)-1; 
+0092     <span class="keyword">end</span>
+0093     <span class="keyword">if</span> Costellation(1,2)==1
+0094         Sat_num_GLO(ii)=length(out(ii).GLO.el)-1;
+0095          Sat_num(ii)=Sat_num(ii)+length(out(ii).GLO.el)-1;
+0096     <span class="keyword">end</span>
+0097     <span class="keyword">if</span> Costellation(1,3)==1
+0098         Sat_num_BEI(ii)=length(out(ii).BEI.el)-1;
+0099          Sat_num(ii)=Sat_num(ii)+length(out(ii).BEI.el)-1;
+0100     <span class="keyword">end</span>
+0101     <span class="keyword">if</span> Costellation(1,4)==1
+0102         Sat_num_GAL(ii)=length(out(ii).GAL.el)-1;
+0103          Sat_num(ii)=Sat_num(ii)+length(out(ii).GAL.el)-1;
+0104     <span class="keyword">end</span>
+0105 
+0106 <span class="keyword">end</span>
+0107 subplot(2,1,2)
+0108 hold on
+0109 plot(ax,Sat_num,<span class="string">'r'</span>,<span class="string">'LineWidth'</span>,1,<span class="string">'DurationTickFormat'</span>,<span class="string">'dd:hh:mm:ss'</span>)
+0110 <span class="keyword">if</span> Costellation(1,1)==1
+0111     plot(ax,Sat_num_GPS,<span class="string">'k'</span>)
+0112     disp(<span class="string">'Mean pf sat Gps urban:'</span>)
+0113     mean(Sat_num_GPS)
+0114 <span class="keyword">end</span>
+0115 <span class="keyword">if</span> Costellation(1,2)==1
+0116     plot(ax,Sat_num_GLO,<span class="string">'b'</span>)
+0117     disp(<span class="string">'Mean pf sat Glonass urban:'</span>)
+0118     mean(Sat_num_GLO)
+0119 <span class="keyword">end</span>
+0120 <span class="keyword">if</span> Costellation(1,3)==1
+0121     plot(ax,Sat_num_BEI,<span class="string">'g'</span>)
+0122     disp(<span class="string">'Mean pf sat BeiDou urban:'</span>)
+0123     mean(Sat_num_BEI)
+0124     
+0125 <span class="keyword">end</span>
+0126 <span class="keyword">if</span> Costellation(1,4)==1
+0127     plot(ax,Sat_num_GAL,<span class="string">'m'</span>)
+0128     disp(<span class="string">'Mean pf sat Galileo urban:'</span>)
+0129     mean(Sat_num_GAL)
+0130     
+0131 <span class="keyword">end</span>
+0132 title(<span class="string">'Number of total visible satellites'</span>)
+0133 grid on
+0134 grid minor
+0135 xlabel(<span class="string">'Day Time'</span>)
+0136 hold off</pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>

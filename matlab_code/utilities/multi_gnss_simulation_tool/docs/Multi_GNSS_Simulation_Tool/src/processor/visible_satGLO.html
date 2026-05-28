@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of visible_satGLO</title>
+  <meta name="keywords" content="visible_satGLO">
+  <meta name="description" content="visible_satGLO Find the visible Glonass satellites.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../../index.html">Home</a> &gt;  <a href="../../index.html">Multi_GNSS_Simulation_Tool</a> &gt; <a href="#">src</a> &gt; <a href="index.html">processor</a> &gt; visible_satGLO.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../../index.html"><img alt="<" border="0" src="../../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Multi_GNSS_Simulation_Tool\src\processor&nbsp;<img alt=">" border="0" src="../../../right.png"></a></td></tr></table>-->
+
+<h1>visible_satGLO
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>visible_satGLO Find the visible Glonass satellites.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> visible_satGLO Find the visible Glonass satellites.
+   [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../Multi_GNSS_Simulation_Tool/MULTI_GNSS_Simulation_Tool.html" class="code" title="">MULTI_GNSS_Simulation_Tool</a>	MULTI GNSS SIMULATION TOOL</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask)</a>
+0002 <span class="comment">% visible_satGLO Find the visible Glonass satellites.</span>
+0003 <span class="comment">%   [Absolute_SatPosGLO,SatPosGLO,el,az,PRN]=visible_satGLO(phi,lambda,h,SatGLO_all,el_mask)</span>
+0004 
+0005 <span class="comment">%% Parameters</span>
+0006 aax=6378137;<span class="comment">%[m]</span>
+0007 flattening=1/298.257222101;
+0008 bax=(1-flattening)*aax;<span class="comment">%[m]</span>
+0009 SV = <span class="string">'R'</span>+string(1:30);
+0010 <span class="comment">%% Algorithm</span>
+0011 N=aax/sqrt(1-(1-(bax)^2/aax^2)*(sin(phi))^2);
+0012 X=(N+h)*cos(phi)*cos(lambda);<span class="comment">%[m]</span>
+0013 Y=(N+h)*cos(phi)*sin(lambda);<span class="comment">%[m]</span>
+0014 Z=((1-(1-bax^2/aax^2))*N+h)*sin(phi);<span class="comment">%[m]</span>
+0015 
+0016 index=1;
+0017 <span class="keyword">for</span> k=1:length(SatGLO_all(1,:))
+0018     xs=SatGLO_all(1,k)-X;<span class="comment">%deltax%[m]</span>
+0019     ys=SatGLO_all(2,k)-Y;<span class="comment">%deltay%[m]</span>
+0020     zs=SatGLO_all(3,k)-Z;<span class="comment">%deltaz%[m]</span>
+0021     ENU=[-sin(lambda) cos(lambda) 0;-cos(lambda)*sin(phi) -sin(lambda)*sin(phi) cos(phi);cos(lambda)*cos(phi) sin(lambda)*cos(phi) sin(phi)]*[xs;ys;zs];
+0022     Est=ENU(1,1);
+0023     Nord=ENU(2,1);
+0024     Up=ENU(3,1);
+0025     Elevation=asin(Up/sqrt(Est^2+Nord^2+Up^2));
+0026     Azimuth=atan2(Est,Nord);
+0027     Azimuth=rem(Azimuth+2*pi,2*pi);
+0028     <span class="keyword">if</span> Elevation&gt;el_mask
+0029         el(1,index)=Elevation;
+0030         az(1,index)=Azimuth;
+0031         PRN(1,index)=SV(1,k);
+0032         SatPosGLO(:,index)=[xs;ys;zs];<span class="comment">%[m]</span>
+0033         Absolute_SatPosGLO(:,index) = [SatGLO_all(1,k);SatGLO_all(2,k);SatGLO_all(3,k)];
+0034         index=index+1;
+0035     <span class="keyword">end</span>
+0036 <span class="keyword">end</span>
+0037 <span class="comment">%% Invalid</span>
+0038 invalid={<span class="string">'invalid'</span>};
+0039 el(1,index)=NaN;
+0040 az(1,index)=NaN;
+0041 PRN(1,index)=invalid;
+0042 SatPosGLO(:,index)=[0;0;0];
+0043 index=index+1;</pre></div>
+<hr><address>Generated on Fri 16-Dec-2022 12:09:19 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
+</body>
+</html>
