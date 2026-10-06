@@ -61,6 +61,7 @@ scenario = generateScenario(cfg);
 %   scenario.time
 %   scenario.truth.position
 %   scenario.truth.velocity
+%   scenario.truth.x
 %   scenario.gnss.idealPseudorange
 %   scenario.gnss.satellitePosition
 %   scenario.gnss.nSatellites
@@ -79,22 +80,22 @@ if cfg.plot.scenario
 end
 
 % % Verify scenario
-% if cfg.plot.verifyScenario
-%     verifyScenario(scenario, cfg);
-% end
+if cfg.plot.verifyScenario
+    verifyScenario(scenario, cfg);
+end
 
 %% 4. Run Monte Carlo simulation
 
 fprintf('Running Monte Carlo simulation...\n');
 
-mcResults = runMonteCarlo(scenario, cfg);
+[mcData, mcResults] = runMonteCarlo(scenario, cfg);
 
 
 %% 5. Compute performance metrics
 
 fprintf('Computing performance metrics...\n');
 
-metrics = computeMetrics(scenario, mcResults, cfg);
+metrics = computeMetrics(mcResults, cfg);
 
 
 %% 6. Plot Monte Carlo results
@@ -107,7 +108,7 @@ end
 %% 7. Plot performance metrics
 
 if cfg.plot.metrics
-    plotMetrics(metrics, cfg);
+    plotMetrics(scenario, metrics, cfg);
 end
 
 

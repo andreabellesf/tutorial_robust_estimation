@@ -25,13 +25,20 @@ cfg.paths.figures     = fullfile(cfg.paths.results, 'figures');
 % Data filenames
 cfg.filename.gnssData = 'opensky_2022_neustrelitz_satellite_positions_enu';
 
+
 %% Simulation
 
 cfg.simulation.randomSeed = 42;
 cfg.simulation.freqGnss = 1; 
 cfg.simulation.dt       = 1/cfg.simulation.freqGnss;       % [s]
-cfg.simulation.nEpochs  = 300;       % [-]
+cfg.simulation.nEpochs  = 50;       % [-]
 cfg.simulation.nFreq    = 1;
+
+%% Monte Carlo
+
+cfg.monteCarlo.numRuns = 1;
+cfg.monteCarlo.baseSeed = 1000;
+cfg.monteCarlo.showProgress = true;
 
 %% Ground truth trajectory
 
@@ -43,50 +50,52 @@ cfg.trajectory.initialPosition = [0 0 0]; % [53.3295056 13.0717511 10];  % Initi
 cfg.trajectory.initialVelocity = [0 0 0];  % initial velocity in ENU frame [m/s; m/s; m/s]
 
 % Standard deviation for dynamical movement parameters
-cfg.trajectory.velocitySigma = [1, 1, 1]; % Standard deviation for the 
+cfg.trajectory.velocitySigma = [0.1;0.1;0.1]; % Standard deviation for the 
 % velocity, expressed in the ENU frame, in [m/s/s]
 
 
 %% GNSS measurement model
 
-cfg.gnss.pseudorangeSigma = 0.5;     % [m]
+cfg.gnss.pseudorangeSigma = 0.3;     % [m]
 
 %% Navigation filters
 
 cfg.filters.enabled = { ...
     'EKF', ...
-    'RKF'};
+    'Huber'};
 
+cfg.filters.initialPosition = cfg.trajectory.initialPosition(:) + [20; 30; 10];
+cfg.filters.initialVelocity = cfg.trajectory.initialVelocity(:); % + [1; -1; 0.5];
 
-cfg.filters.initialPosition = [0 0 0];
-cfg.filters.initialVelocity = [0 0 0];
-
-cfg.filters.initPosSigma = 20;      % m
+cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s
 
 cfg.filters.trajectory.type = "constant_velocity";
 
 % Process-noise standard deviations
-cfg.filters.accSigma = [0.1; 0.1; 0.001];
-cfg.filters.velSigmaEnu  = [0.1 0.1 0.001]; % expressed in the ENU frame, in [m/s/s]
+cfg.filters.accSigmaEnu = [0.1;0.1;0.1];
+cfg.filters.velSigmaEnu = [0.1;0.1;0.1]; % expressed in the ENU frame, in [m/s/s]
 
+% Robust tuning constants
+cfg.filters.tuning.Huber        = 1.345;
+cfg.filters.tuning.Tukey        = 4.6851;
 
-%% Monte Carlo
+% Robust EKF
+cfg.filters.nIterRKF      = 20;
+cfg.filters.stateTol      = 1e-7;
 
-cfg.monteCarlo.numRuns = 1;
-cfg.monteCarlo.baseSeed = 1000;
-cfg.monteCarlo.showProgress = true;
 
 %% Metrics
 
 cfg.metrics.computeRMSE = true;
 cfg.metrics.computeNEES = true;
+cfg.metrics.alpha    = 0.05;      % 95% consistency interval
 
 %% Plotting
 
 cfg.plot.scenario   = true;
-cfg.plot.verifyScenario   = true;
-cfg.plot.monteCarlo = true;
+cfg.plot.verifyScenario   = false;
+cfg.plot.monteCarlo = false;
 cfg.plot.metrics    = true;
 
 cfg.plot.position   = true;

@@ -1,35 +1,47 @@
-function result = runMonteCarloRealization(trial, cfg)
+function [result, estimationError, neesFullState, neesPos, neesVel, residuals]  = runMonteCarloRealization(trial, scenario, cfg)
 
 nFilters = numel(cfg.filters.enabled);
+nEpochs = cfg.simulation.nEpochs;
+[~, nState] = stateIndex();
 
+estimationError = nan(nFilters, nState, nEpochs);
+neesFullState = nan(nFilters, nEpochs);
+neesPos = nan(nFilters, nEpochs);
+neesVel = nan(nFilters, nEpochs);
+residuals = nan(nFilters, scenario.gnss.nSatellites, nEpochs);
 
 for m = 1:nFilters
 
-    filter = cfg.filters.enabled{m};
+    filtername = cfg.filters.enabled{m};
 
-    switch filter
+    switch filtername
 
         case 'EKF'
 
-            result.EKF = runEKF( ...
-                trial, cfg);
+            result.(filtername) = runEKF( ...
+                trial, scenario, cfg);
 
-        case 'RKF'
+        case 'Huber'
 
-            result.RKF = runRKF( ...
-                trial, cfg);
+            result.(filtername) = runRKF( ...
+                trial, scenario, cfg, filtername);
 
         % case '...'
 
         otherwise
 
-            error('Unknown filter: %s', filter);
+            error('Unknown filter: %s', filtername);
 
     end
 
-    %% Compute errors
+    %% Store helping variables
+    
+    estimationError(m,:,:) = result.(filtername).errorEst;
+    neesFullState(m,:) = result.(filtername).neesFullState;
+    neesPos(m,:) = result.(filtername).neesPos;
+    neesVel(m,:) = result.(filtername).neesVel;
+    residuals(m,:,:) = result.(filtername).residuals;
 
-    %% Store results
 
 end
 

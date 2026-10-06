@@ -1,6 +1,4 @@
-function [xPred,PPred] = predict(x, P, dt, cfg)
-
-[F,Q] = dynamicModelFilter(dt, cfg);
+function [xPred,PPred] = predict(x, P, F, Q)
 
 xPred = F * x;
 PPred = F * P * F' + Q;

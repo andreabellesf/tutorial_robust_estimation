@@ -1,16 +1,27 @@
-function filter = runRKF(trial, cfg)
+function filter = runRKF(trial, scenario, cfg, filtername)
 % Conventional EKF using GNSS pseudorange observations
 
 n = cfg.simulation.nEpochs;
 
-%% State indexing
+%% State indexing and variable initialization
 [idx, nx] = stateIndex();
 
 x = zeros(nx, 1);
 P = zeros(nx);
 
-filter.x = zeros(nx,n);
+filter.xEst = zeros(nx,n);
 filter.P = cell(1,n);
+filter.info = cell(1,n);
+
+filter.xEst = zeros(nx,n);
+filter.P = cell(1,n);
+filter.idx = idx;
+errorEst = zeros(nx,n);
+errorEstPos = zeros(3,n);
+errorEstVel = zeros(3,n);
+neesFullState = zeros(1,n);
+neesPos = zeros(1,n);
+neesVel = zeros(1,n);
 
 %% Initial state
 x(idx.pos) = cfg.filters.initialPosition;
@@ -39,30 +50,50 @@ for k = 1:n
 
     %% Prediction step
     
-    xPred = F * x;
-    PPred = F * P * F' + Q;
+    [xPred,PPred] = predict(x, P, F, Q);
 
-    predPos = xPred(1:3);
-    predVel = xPred(4:6);
-
+    %% Update step
     
-    %% EKF update
-    
-    [hx,H,R] = observationModel(predPos, satPos, nObsPerEpoch, cfg);
+    [xEst,PEst,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsPerEpoch, cfg, filtername);
 
-    residuals = y - hx;
+    %% Compute errors and NEES
 
-    S = H * PPred * H' + R;
-    K = PPred * H' / S;
+    [errorEst(:, k), ...
+        errorEstPos(:, k), ...
+        errorEstVel(:, k)  ...
+        ] = computeEstimationErrors( xEst, ...
+                                     scenario.truth.x(:, k),     ...
+                                     idx);
 
-    x = xPred + K * residuals;
-
-    I = eye(size(P));
-    P = (I - K * H) * PPred; 
+    [neesFullState(:, k), ...
+    neesPos(:, k), ...
+    neesVel(:, k)  ...
+    ] = computeNees( errorEst(:, k), ...
+                     PEst,     ...
+                     idx);
 
     %% Store estimated state
 
-    filter.x(:, k) = x;
-    filter.P{k} = P;
+    filter.xEst(:, k) = xEst;
+    filter.P{k} = PEst;
+    filter.weights(:, k) = info.weights;
+    filter.iterations(k) = info.iterations;
+    filter.residuals(:, k) = residuals;
+    filter.nObsPerEpoch(k) = nObsPerEpoch;
+
+    %% Set for next iteration
+    x = xEst;
+    P = PEst;
+
+end
+
+%% Store errors and NEES
+
+filter.errorEst = errorEst;
+filter.errorEstPos = errorEstPos;
+filter.errorEstVel = errorEstVel;
+filter.neesFullState = neesFullState;
+filter.neesPos = neesPos;
+filter.neesVel = neesVel;
 
 end
