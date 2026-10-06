@@ -42,5 +42,3 @@ tutorial_robust_estimation/
 └── results/
     ├── figures/
     └── ...
-
-
