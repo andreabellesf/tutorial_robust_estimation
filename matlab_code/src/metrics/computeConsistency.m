@@ -1,0 +1,2 @@
+function [] =  computeConsistency()
+end
