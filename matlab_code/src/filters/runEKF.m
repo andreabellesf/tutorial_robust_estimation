@@ -38,8 +38,9 @@ for k = 1:n
     %% Select valid satellite positions and GNSS measurement for current epoch k
 
     pseudorangeEpoch  = trial.gnss.pseudorange(:,k);
-    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial,pseudorangeEpoch);
-    satPos = trial.gnss.satellitePosition(1:3, idxValidSat);
+    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition.ENU, ...
+                                                        pseudorangeEpoch);
+    satPos = trial.gnss.satellitePosition.ENU(:, idxValidSat);
     pseudorange = pseudorangeEpoch(idxValidSat);
 
     y = pseudorange(:);

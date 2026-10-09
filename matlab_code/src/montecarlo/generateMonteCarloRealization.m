@@ -1,7 +1,8 @@
 function trial = generateMonteCarloRealization(scenario, cfg)
 
     %% Start from reference scenario
-    trial = scenario;
+    trial.time = scenario.time;
+    trial.gnss = scenario.gnss;
 
     %% Pseudorange noise
     % Inject noise into pseudorange measurements according to the configuration

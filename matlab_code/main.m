@@ -38,8 +38,11 @@ myFolder = fileparts(which(mfilename)); % Determine where your m-file's folder i
 addpath(genpath(myFolder)); % Add that folder plus all subfolders to the path.
 
 %%
+fprintf('\n***********************************************************************\n');
+fprintf('\n***** Welcome to the Tutorial on Robust Estimation for Navigation *****\n');
+fprintf('\n***********************************************************************\n');
 
-fprintf('\nRunning Main for Tutorial on Robust Estimation for Navigation\n');
+fprintf('\nRunning Main\n');
 fprintf('\n--------------------------------------\n');
 
 %% 1. Configuration
@@ -63,8 +66,9 @@ scenario = generateScenario(cfg);
 %   scenario.truth.velocity
 %   scenario.truth.x
 %   scenario.gnss.idealPseudorange
-%   scenario.gnss.satellitePosition
+%   scenario.gnss.satellitePosition (ECEF, ENU)
 %   scenario.gnss.nSatellites
+%   scenario.gnss.satelliteId (all, enabled cons)
 
 %% 2. Generate one example GNSS realization
 
@@ -88,7 +92,7 @@ end
 
 fprintf('Running Monte Carlo simulation...\n');
 
-[mcData, mcResults] = runMonteCarlo(scenario, cfg);
+[mcData, mcResults, outliersLog] = runMonteCarlo(scenario, cfg);
 
 
 %% 5. Compute performance metrics
@@ -108,7 +112,7 @@ end
 %% 7. Plot performance metrics
 
 if cfg.plot.metrics
-    plotMetrics(scenario, metrics, cfg);
+    plotMetrics(scenario, metrics, outliersLog, cfg);
 end
 
 

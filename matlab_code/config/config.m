@@ -23,16 +23,17 @@ cfg.paths.results     = fullfile(cfg.paths.root, 'results');
 cfg.paths.figures     = fullfile(cfg.paths.results, 'figures');
 
 % Data filenames
-cfg.filename.gnssData = 'opensky_2022_neustrelitz_satellite_positions_enu';
-
+cfg.filename.gnssData.ecef = 'opensky_2022_neustrelitz_satellite_positions';
+cfg.filename.gnssData.enu = 'opensky_2022_neustrelitz_satellite_positions_enu';
+cfg.filename.gnssData.satelliteInformation = 'opensky_SatelliteInformation';
 
 %% Simulation
 
 cfg.simulation.randomSeed = 42;
 cfg.simulation.freqGnss = 1; 
 cfg.simulation.dt       = 1/cfg.simulation.freqGnss;       % [s]
-cfg.simulation.nEpochs  = 50;       % [-]
-cfg.simulation.nFreq    = 1;
+cfg.simulation.nEpochs  = 60;       % [-]
+cfg.simulation.nFreq    = 1; % Do not change
 
 %% Monte Carlo
 
@@ -45,9 +46,10 @@ cfg.monteCarlo.showProgress = true;
 cfg.trajectory.type = "constant_velocity";
 cfg.trajectory.initialDate=[2022 12 13 9 0 0];     % Insert initial time [year month day 
 % hour minutes seconds]
-cfg.trajectory.initialPosition = [0 0 0]; % [53.3295056 13.0717511 10];  % Initial location in 
+cfg.trajectory.initialPosition.ENU = [0 0 0]; 
+cfg.trajectory.initialPosition.LLH = [53.3295056 13.0717511 10]; % Initial location in 
 % latitude, longitude and height [deg; deg; m]
-cfg.trajectory.initialVelocity = [0 0 0];  % initial velocity in ENU frame [m/s; m/s; m/s]
+cfg.trajectory.initialVelocity.ENU = [0 0 0];  % initial velocity in ENU frame [m/s; m/s; m/s]
 
 % Standard deviation for dynamical movement parameters
 cfg.trajectory.velocitySigma = [0.1;0.1;0.1]; % Standard deviation for the 
@@ -56,7 +58,10 @@ cfg.trajectory.velocitySigma = [0.1;0.1;0.1]; % Standard deviation for the
 
 %% GNSS measurement model
 
+cfg.gnss.enabledGPS       = true;
+cfg.gnss.enabledGAL       = true;
 cfg.gnss.pseudorangeSigma = 0.3;     % [m]
+cfg.gnss.elevationMask    = 5;       % degrees (°)
 
 %% Navigation filters
 
@@ -64,8 +69,8 @@ cfg.filters.enabled = { ...
     'EKF', ...
     'Huber'};
 
-cfg.filters.initialPosition = cfg.trajectory.initialPosition(:) + [20; 30; 10];
-cfg.filters.initialVelocity = cfg.trajectory.initialVelocity(:); % + [1; -1; 0.5];
+cfg.filters.initialPosition = cfg.trajectory.initialPosition.ENU(:) + [20; 30; 10];
+cfg.filters.initialVelocity = cfg.trajectory.initialVelocity.ENU(:); % + [1; -1; 0.5];
 
 cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s
@@ -84,6 +89,9 @@ cfg.filters.tuning.Tukey        = 4.6851;
 cfg.filters.nIterRKF      = 20;
 cfg.filters.stateTol      = 1e-7;
 
+%% Outliers / faults profile
+cfg.outliers.enabled            = true;
+cfg.outliers.profileFilename    = "configOutliersProfile_test_0";
 
 %% Metrics
 

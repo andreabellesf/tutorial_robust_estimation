@@ -1,0 +1,121 @@
+%% Fighting the Mismatch: A Tutorial on Robust Estimation for Navigation
+
+%**************************************************************************
+% This script showcases the complete simulation workflow for the tutorial:
+%
+%   1. Setup configuration for the scenario and simulation 
+%   2. Generate the reference scenario
+%   3. Generate GNSS measurements
+%   4. Run navigation filters using Monte Carlo simulation
+%   5. Compute performance metrics
+%   6. Plot and compare the results
+%
+% Implementation details are contained in the corresponding functions.
+%
+%--------------------------------------------------------------------------
+% Date : 09-December-2026
+% Author : Daniel MEDINA (daniel.ariasmedina@dlr.de)
+%          Andrea BELLES FERRERES (andrea.bellesferreres@dlr.de)
+%          Helena CALATRAVA (calatrava.h@northeastern.edu)
+%          Paul CHAUCHAT (paul.chauchat@lis-lab.fr)
+%          Pau CLOSAS (closas@ece.neu.edu)
+%          Jordi VILA-VALLS (Jordi.VILA-VALLS@isae-supaero.fr) 
+%
+% Institute of Communications and Navigation, German Aerospace Center 
+% (DLR), Neustrelitz, Germany
+% Northeastern University, Boston, USA
+% Aix-Marseille University, Marseille, France
+% ISAE-SUPAERO, University of Toulouse, Toulouse, France
+%--------------------------------------------------------------------------
+%
+%**************************************************************************
+
+clear all; close all; clc;
+
+%% Load files and functions in subdir
+
+myFolder = fileparts(which(mfilename)); % Determine where your m-file's folder is.
+addpath(genpath(myFolder)); % Add that folder plus all subfolders to the path.
+
+%%
+
+fprintf('\nRunning Main for Tutorial on Robust Estimation for Navigation\n');
+fprintf('\n--------------------------------------\n');
+
+%% 1. Configuration
+
+fprintf('\nSetting up cofiguration...\n');
+
+cfg = config();
+
+rng(cfg.simulation.randomSeed);
+
+
+%% 2. Generate reference scenario
+
+fprintf('Generating scenario...\n');
+
+scenario = generateScenario(cfg);
+
+% "scenario" should contain:
+%   scenario.time
+%   scenario.truth.position
+%   scenario.truth.velocity
+%   scenario.gnss.idealPseudorange
+%   scenario.gnss.satellitePosition
+%   scenario.gnss.nSatellites
+
+%% 2. Generate one example GNSS realization
+
+rng(cfg.simulation.randomSeed);
+
+example = generateMonteCarloRealization( ...
+    scenario, cfg);
+
+%% 3. Plot generated scenario
+
+if cfg.plot.scenario
+    plotScenario(scenario, example, cfg);
+end
+
+% % Verify scenario
+% if cfg.plot.verifyScenario
+%     verifyScenario(scenario, cfg);
+% end
+
+%% 4. Run Monte Carlo simulation
+
+fprintf('Running Monte Carlo simulation...\n');
+
+mcResults = runMonteCarlo(scenario, cfg);
+
+
+%% 5. Compute performance metrics
+
+fprintf('Computing performance metrics...\n');
+
+metrics = computeMetrics(scenario, mcResults, cfg);
+
+
+%% 6. Plot Monte Carlo results
+
+if cfg.plot.monteCarlo
+    plotMonteCarlo(scenario, mcResults, cfg);
+end
+
+
+%% 7. Plot performance metrics
+
+if cfg.plot.metrics
+    plotMetrics(metrics, cfg);
+end
+
+
+%% 8. Summary
+
+fprintf('\nSimulation complete.\n');
+
+% disp(metrics.summary);
+
+
+

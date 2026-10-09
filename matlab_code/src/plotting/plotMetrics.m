@@ -1,4 +1,4 @@
-function [] = plotMetrics(scenario, metrics, cfg)
+function [] = plotMetrics(scenario, metrics, outliersLog, cfg)
 
 %% Plotting options
 t = scenario.time;
@@ -45,6 +45,11 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
+if cfg.outliers.enabled
+    axs = findobj(gca, 'Type', 'axes');
+    addFaultPatches(axs, outliersLog);
+end
+
 %% Results MC -- Plot B: position-only ANEES
 
 figure; hold on; grid on; box on;
@@ -77,6 +82,11 @@ legend('show','Location','northeast','NumColumns',1, ...
     'Interpreter','latex','FontSize',15);
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
+
+if cfg.outliers.enabled
+    axs = findobj(gca, 'Type', 'axes');
+    addFaultPatches(axs, outliersLog);
+end
 
 %% Results MC -- Plot C: full-state ANEES
 
@@ -111,6 +121,11 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
+if cfg.outliers.enabled
+    axs = findobj(gca, 'Type', 'axes');
+    addFaultPatches(axs, outliersLog);
+end
+
 %% Results MC -- Plot D: Estimated residuals
 
 figure; hold on; grid on; box on;
@@ -138,6 +153,11 @@ legend('show','Location','northeast','NumColumns',1, ...
     'Interpreter','latex','FontSize',15);
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
+
+if cfg.outliers.enabled
+    axs = findobj(gca, 'Type', 'axes');
+    addFaultPatches(axs, outliersLog);
+end
 
 
 end

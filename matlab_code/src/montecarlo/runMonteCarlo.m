@@ -1,4 +1,4 @@
-function [mcData, mcResults] = runMonteCarlo(scenario, cfg)
+function [mcData, mcResults, outliersLog] = runMonteCarlo(scenario, cfg)
 
 nRuns = cfg.monteCarlo.numRuns;
 nFilters = numel(cfg.filters.enabled);
@@ -28,11 +28,18 @@ for iRun = 1:nRuns
     trial = generateMonteCarloRealization( ...
         scenario, cfg);
 
-    %% Add faults/outliers
-    % if cfg.outliersOn
-    %     % Add faults to "noisy" measurements and sv position and clock
-    %     [ ] = gnss_obs_faults_injector( );
-    % end
+    %% Inject outliers / faults into GNSS measurements
+    if cfg.outliers.enabled
+        % Add faults to noisy GNSS measurements and satellite positions
+
+        run(cfg.outliers.profileFilename);
+
+        outliersProfile = mergeOutliersProfiles(cfg.outliers.profile);
+        cfg.outliers.nOutliers = numel(outliersProfile);
+
+        [ trial, outliersLog] = injectOutliers( trial, outliersProfile, cfg);
+
+    end
 
     %% Run all enabled filters
     [mcData{iRun}, ...
@@ -70,6 +77,5 @@ fprintf('--------------------------\n');
 fprintf('Number of runs:       %d\n',nRuns);
 fprintf('Total elapsed time:   %s\n',formatElapsedTime(totalElapsed));
 fprintf('Mean time per run:    %.3f s\n',mean(mcElapsed));
-
 
 end

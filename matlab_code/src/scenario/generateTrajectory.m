@@ -2,7 +2,7 @@ function truth = generateTrajectory(cfg)
 
 %% Initialize reference solution for ground truth generation
 state_reference = nan( 6, cfg.simulation.nEpochs ); 
-state_reference(:,1) = [ cfg.trajectory.initialPosition(:); cfg.trajectory.initialVelocity(:) ]; 
+state_reference(:,1) = [ cfg.trajectory.initialPosition.ENU(:); cfg.trajectory.initialVelocity.ENU(:) ]; 
 
 %% Define motion model matrices
 switch cfg.trajectory.type
