@@ -20,5 +20,6 @@ function trial = generateMonteCarloRealization(scenario, cfg)
 
     %% Store true measurement errors
     trial.gnss.truePseudorangeError = noise;
+    trial.gnss.noisyPseudorange = trial.gnss.pseudorange;
    
 end

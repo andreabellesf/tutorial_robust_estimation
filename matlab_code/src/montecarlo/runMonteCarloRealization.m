@@ -1,14 +1,16 @@
-function [result, estimationError, neesFullState, neesPos, neesVel, residuals]  = runMonteCarloRealization(trial, scenario, cfg)
+function [estimation, results]  = runMonteCarloRealization(trial, scenario, cfg)
 
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
 [~, nState] = stateIndex();
 
-estimationError = nan(nFilters, nState, nEpochs);
-neesFullState = nan(nFilters, nEpochs);
-neesPos = nan(nFilters, nEpochs);
-neesVel = nan(nFilters, nEpochs);
-residuals = nan(nFilters, scenario.gnss.nSatellites, nEpochs);
+results = struct();
+
+results.estimationError = nan(nFilters, nState, nEpochs);
+results.neesFullState = nan(nFilters, nEpochs);
+results.neesPos = nan(nFilters, nEpochs);
+results.neesVel = nan(nFilters, nEpochs);
+results.residuals = nan(nFilters, scenario.gnss.nSatellites, nEpochs);
 
 for m = 1:nFilters
 
@@ -18,12 +20,12 @@ for m = 1:nFilters
 
         case 'EKF'
 
-            result.(filtername) = runEKF( ...
+            estimation.(filtername) = runEKF( ...
                 trial, scenario, cfg);
 
         case 'Huber'
 
-            result.(filtername) = runRKF( ...
+            estimation.(filtername) = runRKF( ...
                 trial, scenario, cfg, filtername);
 
         % case '...'
@@ -36,11 +38,11 @@ for m = 1:nFilters
 
     %% Store helping variables
     
-    estimationError(m,:,:) = result.(filtername).errorEst;
-    neesFullState(m,:) = result.(filtername).neesFullState;
-    neesPos(m,:) = result.(filtername).neesPos;
-    neesVel(m,:) = result.(filtername).neesVel;
-    residuals(m,:,:) = result.(filtername).residuals;
+    results.estimationError(m,:,:) = estimation.(filtername).errorEst;
+    results.neesFullState(m,:) = estimation.(filtername).neesFullState;
+    results.neesPos(m,:) = estimation.(filtername).neesPos;
+    results.neesVel(m,:) = estimation.(filtername).neesVel;
+    results.residuals(m,:,:) = estimation.(filtername).residuals;
 
 
 end

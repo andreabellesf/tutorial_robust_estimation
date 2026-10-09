@@ -31,7 +31,7 @@ for iFilter = 1:metrics.nFilters
 
 end
 
-xlim([0 metrics.nEpochs]);
+xlim([t(1) t(end)]);
 
 xlabel('Time [s]','Interpreter','latex');
 
@@ -69,7 +69,7 @@ yline(metrics.nees.position.naneesExpected,'k-','Expected NEES = 1', ...
     'Interpreter','latex', 'FontSize',13);
 
 
-xlim([0 metrics.nEpochs]);
+xlim([t(1) t(end)]);
 
 xlabel('Time [s]', 'Interpreter','latex');
 
@@ -107,7 +107,7 @@ yline(metrics.nees.fullState.naneesExpected,'k-','Expected NEES = 1', ...
     'Interpreter','latex', 'FontSize',13);
 
 
-xlim([0 metrics.nEpochs]);
+xlim([t(1) t(end)]);
 
 xlabel('Time [s]', 'Interpreter','latex');
 
@@ -140,7 +140,7 @@ for iFilter = 1:metrics.nFilters
 
 end
 
-xlim([0 metrics.nEpochs]);
+xlim([t(1) t(end)]);
 
 xlabel('Time [s]', 'Interpreter','latex');
 

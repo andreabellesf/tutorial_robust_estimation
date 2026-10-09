@@ -40,7 +40,7 @@ if cfg.gnss.enabledGAL
     satelliteIdGAL = data.SatelliteInformation(1).GAL.PRN;
     satelliteId = [satelliteId; satelliteIdGAL];
 
-    satelliteIdxGAL = satelliteIdx(end):satelliteIdx(end)+numel(satelliteIdGAL);
+    satelliteIdxGAL = satelliteIdx(end)+1:satelliteIdx(end)+numel(satelliteIdGAL);
     satelliteIdx = [satelliteIdx; satelliteIdxGAL(:)];  
 end
 

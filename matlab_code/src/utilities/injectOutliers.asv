@@ -278,6 +278,7 @@ function outlier = applyOutlierDefault(outlier)
     default.constellations = {'GPS'};
     default.nSat = 1;
     default.nSatPerConstellation = [];
+    default.reuseOutlier = [];
 
     % -------------------------------------------------------------
     % Magnitude-model default
@@ -323,21 +324,13 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
         case 'explicit'
             cons = normalizeConstellationList( ...
                 outlier.constellations);
-            candidatesId = [];
-            candidatesIdx = [];
-            affectedSatIdx = [];
+            candidates = [];
             for i = 1:numel(cons)
                 field = constellationField(cons{i});
-                if isfield(satIDs, field)
-                    candidatesId = satIDs.(field)(:);
-                    candidatesIdx = satIdx.(field)(:);
-                end
-                [isFound, tmp] = ismember(outlier.satIDs(:), candidatesId);
-                selectedIdx = candidatesIdx(tmp(isFound));
-                affectedSatIdx = [affectedSatIdx; selectedIdx(:)];
+                candidates = satIDs.(field);
             end
 
-            
+            [~, affectedSatIdx] = ismember(outlier.satIDs(:), candidates);
             info.requestedSatellites = ...
                 outlier.satIDs(:).';
 
@@ -376,11 +369,8 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
             candidates = [];
             for i = 1:numel(cons)
                 field = constellationField(cons{i});
-                if isfield(satIdx, field)
-                    candidates = [candidates; satIdx.(field)(:)];
-                end
+                candidates = satIdx.(field);
             end
-            candidates = unique(candidates, 'stable');
             nCandidates = numel(candidates);
             nChoose = min( outlier.nSat, nCandidates);
             order = randperm(nCandidates,nChoose);
@@ -424,9 +414,14 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
        % ---------------------------------------------------------
         case 'reuse_previous_selection'
 
-            refOutlier = iOutlier-1;
+            refOutlier = outlier.reuseOutlier;
 
-            affectedSatIdx = outlierLog(refOutlier).selectedSatellites;
+            if refOutlier < 1 || refOutlier > numel(outlierLog)
+                error('Outlier %d requests invalid reuseOutlier = %d.', ...
+                    iOutlier,refOutlier);
+            end
+
+            affectedSatIdx = outlierLog(iOutlier-1).selectedSatellites;
 
             info.requestedSatellites = affectedSatIdx;
             info.selectedConstellations = ...

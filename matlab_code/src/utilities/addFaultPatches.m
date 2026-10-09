@@ -2,6 +2,8 @@ function addFaultPatches(ax, faultLog)
     % Create grey patches for faults (if present)
     % Extract intervals from fault log
     intervals = [[faultLog.startTime]' [faultLog.endTime]'];
+    % Convert epoch indices to time in seconds
+    % intervals = scenario.time(intervalsEpoch);
     % Current y-axis limits
     yl = ylim(ax);
     % Add one patch per fault interval

@@ -1,4 +1,4 @@
-function [mcEstimationFilters, mcEstimationResults, mcData, outliersLog] = runMonteCarlo(scenario, cfg)
+function [mcFilterResults, mcEstimationResults, outliersLog] = runMonteCarlo(scenario, cfg)
 
 nRuns = cfg.monteCarlo.numRuns;
 nFilters = numel(cfg.filters.enabled);
@@ -7,8 +7,7 @@ nObs = scenario.gnss.nSatellites;
 [~, nState] = stateIndex();
 
 mcEstimationResults = struct();
-mcEstimationFilters = cell(1, nRuns);
-mcData = cell(1, nRuns);
+mcFilterResults = cell(1, nRuns);
 
 mcEstimationResults.estimationError = nan(nFilters, nState, nEpochs, nRuns);
 mcEstimationResults.neesFullSate = nan(nFilters, nEpochs, nRuns);
@@ -43,8 +42,8 @@ for iRun = 1:nRuns
     end
 
     %% Run all enabled filters
-    [estimationFilters, ...
-        estimationResults] = runMonteCarloRealization( ...
+    [mcFilterResults{iRun}, ...
+        metrics] = runMonteCarloRealization( ...
         trial, scenario, cfg);
 
     %% Monte-Carlo timing parameters
@@ -57,15 +56,11 @@ for iRun = 1:nRuns
     end
 
     %% Rearrange variables
-    mcEstimationResults.estimationError(:, :, :, iRun) = estimationResults.estimationError;
-    mcEstimationResults.neesFullState(:, :, iRun) = estimationResults.neesFullState;
-    mcEstimationResults.neesPos(:, :, iRun) = estimationResults.neesPos;
-    mcEstimationResults.neesVel(:, :, iRun) = estimationResults.neesVel;
-    mcEstimationResults.residuals(:, :, :, iRun) = estimationResults.residuals;  
-
-    mcEstimationFilters{iRun} = estimationFilters;
-
-    mcData{iRun} = trial;
+    mcEstimationResults.estimationError(:, :, :, iRun) = estimationError;
+    mcEstimationResults.neesFullState(:, :, iRun) = neesFullState;
+    mcEstimationResults.neesPos(:, :, iRun) = neesPos;
+    mcEstimationResults.neesVel(:, :, iRun) = neesVel;
+    mcEstimationResults.residuals(:, :, :, iRun) = residuals;   
 
     
 end

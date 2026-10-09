@@ -2,7 +2,7 @@ function scenario = generateScenario(cfg)
 
 %% Construct Time vector
 scenario.time = ...
-    (0:cfg.simulation.dt:cfg.simulation.nEpochs-1).';
+    (0:cfg.simulation.nEpochs-1).' * cfg.simulation.dt;
 
 %% Generate ground truth
 scenario.truth = generateTrajectory(cfg);

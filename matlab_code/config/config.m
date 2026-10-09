@@ -91,7 +91,7 @@ cfg.filters.stateTol      = 1e-7;
 
 %% Outliers / faults profile
 cfg.outliers.enabled            = true;
-cfg.outliers.profileFilename    = "configOutliersProfile_test_0";
+cfg.outliers.profileFilename    = "configOutliersProfile_test_3";
 
 %% Metrics
 
@@ -103,12 +103,14 @@ cfg.metrics.alpha    = 0.05;      % 95% consistency interval
 
 cfg.plot.scenario   = true;
 cfg.plot.verifyScenario   = false;
-cfg.plot.monteCarlo = false;
+cfg.plot.monteCarlo = true;
 cfg.plot.metrics    = true;
 
 cfg.plot.position   = true;
 cfg.plot.velocity   = true;
 cfg.plot.residuals  = true;
+
+cfg.plot.selectedMc    = 1;
 
 cfg.plot.saveFigures = false;
 cfg.plot.outputFolder = "figures";

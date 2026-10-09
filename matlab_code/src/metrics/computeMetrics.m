@@ -1,4 +1,4 @@
-function metrics = computeMetrics(mcResults, cfg)
+function metrics = computeMetrics(mcEstimationResults, cfg)
 
 %COMPUTEMETRICS Compute Monte Carlo navigation performance metrics.
 %
@@ -22,11 +22,11 @@ function metrics = computeMetrics(mcResults, cfg)
 
 %% Input
 
-err = mcResults.estimationError;
-neesFullState = mcResults.neesFullState;
-neesPos = mcResults.neesPos;
-neesVel = mcResults.neesVel;
-residuals = mcResults.residuals;
+err = mcEstimationResults.estimationError;
+neesFullState = mcEstimationResults.neesFullState;
+neesPos = mcEstimationResults.neesPos;
+neesVel = mcEstimationResults.neesVel;
+residuals = mcEstimationResults.residuals;
 
 [idx, ~] = stateIndex();
 [nFilters, nState, nEpochs, nRuns] = size(err);

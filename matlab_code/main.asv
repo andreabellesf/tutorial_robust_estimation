@@ -105,7 +105,7 @@ metrics = computeMetrics(mcEstimationResults, cfg);
 %% 6. Plot Monte Carlo results
 
 if cfg.plot.monteCarlo
-    plotMonteCarlo(scenario, mcData, outliersLog, cfg);
+    plotMonteCarlo(scenario, mcResults, cfg);
 end
 
 
