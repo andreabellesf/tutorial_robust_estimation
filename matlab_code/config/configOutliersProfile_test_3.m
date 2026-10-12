@@ -7,7 +7,7 @@ cfg.outliers.profile(1).satelliteSelection.mode = 'fraction';
 cfg.outliers.profile(1).satelliteSelection.fraction = 0.2;
 cfg.outliers.profile(1).frequencies = 1;
 cfg.outliers.profile(1).observation = 'code';
-cfg.outliers.profile(1).mode = 'constant';
+cfg.outliers.profile(1).magnitudeType = 'constant';
 cfg.outliers.profile(1).magnitudeValue = 10;
 
 cfg.outliers.profile(2).type = 'noise';
@@ -30,5 +30,5 @@ cfg.outliers.profile(3).satelliteSelection.mode = 'random_sv_all_cons';
 cfg.outliers.profile(3).satelliteSelection.nSat = 3;
 cfg.outliers.profile(3).frequencies = 1;
 cfg.outliers.profile(3).observation = 'code';
-cfg.outliers.profile(3).mode = 'constant';
+cfg.outliers.profile(3).magnitudeType = 'constant';
 cfg.outliers.profile(3).magnitudeValue = 10;

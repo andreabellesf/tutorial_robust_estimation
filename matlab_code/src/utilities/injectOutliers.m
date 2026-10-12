@@ -531,6 +531,7 @@ function [obs, indicesOutlier] = injectAdditionalNoise( ...
     candidates = 1:nSat;
     n = numel(candidates);
     nEpochs = numel(epochIdx);
+    nFreq = numel(freqIdx);
     scale = outlier.noise.scale;
     sigma = cfg.gnss.pseudorangeSigma;
     eps             = outlier.satelliteSelection.fraction;
@@ -544,7 +545,7 @@ function [obs, indicesOutlier] = injectAdditionalNoise( ...
     %----------------------------------------------------------------------
     % Base Gaussian noise (nominal, mean 0)
     %----------------------------------------------------------------------
-    noise = sigma * randn(n, nEpochs);
+    noise = sigma * randn(n, nEpochs, nFreq);
 
     %----------------------------------------------------------------------
     % Randomly select which samples are outliers
@@ -557,10 +558,10 @@ function [obs, indicesOutlier] = injectAdditionalNoise( ...
     %----------------------------------------------------------------------
     switch model
         case 'gaussian'
-            outliers = mu_out + sqrt(scale) * sigma * randn(nOut, nEpochs);
+            outliers = mu_out + sqrt(scale) * sigma * randn(nOut, nEpochs, nFreq);
 
         case 'laplacian'
-            u = rand(nOut, nEpochs) - 0.5;
+            u = rand(nOut, nEpochs, nFreq) - 0.5;
             outliers = mu_out - sign(u) .* sqrt(scale/2) * sigma .* log(1 - 2*abs(u));
 
         case {'student-t', 'student'}
@@ -568,7 +569,7 @@ function [obs, indicesOutlier] = injectAdditionalNoise( ...
             if dof<=2
                 warning('Corresponding DOF value in the t distribution is lower than 2');
             end
-            outliers = mu_out + trnd(dof, nOut, nEpochs);
+            outliers = mu_out + trnd(dof, nOut, nEpochs, nFreq);
 
         otherwise
             error('Unknown outlier model: %s', model);
@@ -577,7 +578,7 @@ function [obs, indicesOutlier] = injectAdditionalNoise( ...
     %----------------------------------------------------------------------
     % Replace nominal samples by outliers
     %----------------------------------------------------------------------
-    noise(indicesOutlier, :) = outliers;
+    noise(indicesOutlier, :, :) = outliers;
 
     for k = 1:numel(epochIdx)
         for f = freqIdx(:).'
