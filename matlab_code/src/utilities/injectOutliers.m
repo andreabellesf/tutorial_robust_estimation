@@ -26,7 +26,9 @@ function [trialFaulty,outlierLog] = injectOutliers(...
 % outlier.selection:
 %   struct describing how satellites are selected
 %
-% Supported mode:
+% Supported satelliteSelection.mode:
+%   'fraction'
+%       --> Use fraction of outlier from all satellites from all enabled constellations
 %   'explicit' 
 %       --> Use outlier.satIDs
 %   'all'
@@ -42,9 +44,6 @@ function [trialFaulty,outlierLog] = injectOutliers(...
 % outlier.seed:
 %   optional independent RNG seed for this profile.
 %
-% Frequency selection:
-%   [] or 'all'  -> all frequencies
-%   numeric      -> frequency indices, e.g. [1 2]
 %
 % Units:
 %   step/ramp magnitude     : metres for code
@@ -70,9 +69,11 @@ function [trialFaulty,outlierLog] = injectOutliers(...
 %           recommended rather than using random selection such that 'selectionMode','all'. 
 %           A satellite clock outlier would instead use explicit for one or more satellites. 
 
-    nSat   = size(trial.gnss.pseudorange,1);
-    nEpoch = size(trial.gnss.pseudorange,2);
-    nFreq  = cfg.simulation.nFreq; 
+    obs = trial.gnss.pseudorange;
+    [nSat,nEpoch,nFreq] = size(obs);
+
+    assert(cfg.simulation.nFreq == nFreq,'cfg.simulation.nFreq disagrees with pseudorange dimensions.');
+    assert(isscalar(cfg.simulation.dt) && cfg.simulation.dt>0,'dt must be positive.');
 
     timeSec = (0:nEpoch-1).' * cfg.simulation.dt;
 
@@ -95,9 +96,10 @@ function [trialFaulty,outlierLog] = injectOutliers(...
         'requestedSatellites',{}, ...
         'selectedSatellites',{}, ...
         'selectedConstellations',{}, ...
+        'fraction',{}, ...
         'frequencies',{}, ...
         'observation',{}, ...
-        'magnitudeType',{}, ...
+        'mode',{}, ...
         'magnitudeRealization',{}, ...
         'profile',{});
 
@@ -105,7 +107,10 @@ function [trialFaulty,outlierLog] = injectOutliers(...
     for iOutlier = 1:numel(outlierProfiles)
 
         outlier = applyOutlierDefault(outlierProfiles(iOutlier));
-        % outlier = outlierProfiles(iOutlier);
+
+        assert(isscalar(outlier.startTime) && isscalar(outlier.endTime) && ...
+            outlier.startTime<=outlier.endTime, ...
+        'Invalid startTime/endTime in profile %d.',iOutlier);
 
         % Independent RNG stream for this profile
         oldRng = rng;
@@ -204,8 +209,8 @@ function [trialFaulty,outlierLog] = injectOutliers(...
             % =====================================================
             case {'noise_scale','noise','variance_scale'}
 
-                trialFaulty.gnss.pseudorange = injectAdditionalNoise( ...
-                    trialFaulty.gnss.pseudorange,epochIdx,satIdx,freqIdx, ...
+                [trialFaulty.gnss.pseudorange, satIdx] = injectAdditionalNoise( ...
+                    trialFaulty.gnss.idealPseudorange,trialFaulty.gnss.pseudorange,epochIdx,nSat,freqIdx, ...
                     outlier,cfg);
 
             otherwise
@@ -229,7 +234,12 @@ function [trialFaulty,outlierLog] = injectOutliers(...
         outlierLog(j).timeSec = outlierTime(:).';
 
         outlierLog(j).selectionMode = ...
-            outlier.mode;
+            outlier.satelliteSelection.mode;
+
+        if strcmp(outlier.satelliteSelection.mode, 'fraction')
+            outlierLog(j).fraction = ...
+            outlier.satelliteSelection.fraction;
+        end
 
         outlierLog(j).requestedSatellites = ...
             selectionInfo.requestedSatellites;
@@ -273,11 +283,30 @@ function outlier = applyOutlierDefault(outlier)
     % -------------------------------------------------------------
     % Satellite-selection default
     % -------------------------------------------------------------
-    default.mode = 'explicit';
-    default.satIDs = [];
-    default.constellations = {'GPS'};
-    default.nSat = 1;
-    default.nSatPerConstellation = [];
+    selectionDefaults = struct( ...
+    'mode', 'fraction', ...
+    'fraction', 0.2, ...
+    'satIDs', [], ...
+    'constellations', {{'GPS'}}, ...
+    'nSat', 1, ...
+    'nSatPerConstellation', []);
+
+    if ~isfield(outlier, 'satelliteSelection') || ...
+            ~isstruct(outlier.satelliteSelection)
+        outlier.satelliteSelection = struct();
+    end
+
+    fields = fieldnames(selectionDefaults);
+
+    for i = 1:numel(fields)
+        name = fields{i};
+
+        if ~isfield(outlier.satelliteSelection, name) || ...
+                isempty(outlier.satelliteSelection.(name))
+            outlier.satelliteSelection.(name) = ...
+                selectionDefaults.(name);
+        end
+    end
 
     % -------------------------------------------------------------
     % Magnitude-model default
@@ -290,6 +319,7 @@ function outlier = applyOutlierDefault(outlier)
     default.magnitudeStd = 1;
     default.magnitudeSigma = 1;
     default.magnitudeDirection = [1 0 0]; % Optional vector direction for ephemeris outlier
+    default.magnitudeDoF = 5;
 
     % -------------------------------------------------------------
     % Merge default
@@ -310,7 +340,7 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
 
     satIDs = gnssData.satelliteId;
     satIdx = gnssData.satelliteIdx;
-    mode = lower(outlier.mode);
+    mode = lower(outlier.satelliteSelection.mode);
 
     info = struct();
 
@@ -320,9 +350,26 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
     switch mode
 
         % ---------------------------------------------------------
+        case 'fraction'
+            candidates = 1:nSat;
+            nCandidates = numel(candidates);
+
+            fractionOutliers = outlier.satelliteSelection.fraction;
+            assert(isscalar(fractionOutliers) && isfinite(fractionOutliers) && ...
+                fractionOutliers >= 0 && fractionOutliers <= 1, ...
+                'Satellite fraction must be between 0 and 1.');
+
+            nAffected = round(nCandidates * fractionOutliers);
+            nChoose = min( ...
+                nAffected, ...
+                nCandidates);
+            order = randperm(nCandidates,nChoose);
+            affectedSatIdx = candidates(order);
+
+        % ---------------------------------------------------------
         case 'explicit'
             cons = normalizeConstellationList( ...
-                outlier.constellations);
+                outlier.satelliteSelection.constellations);
             candidatesId = [];
             candidatesIdx = [];
             affectedSatIdx = [];
@@ -332,14 +379,14 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
                     candidatesId = satIDs.(field)(:);
                     candidatesIdx = satIdx.(field)(:);
                 end
-                [isFound, tmp] = ismember(outlier.satIDs(:), candidatesId);
+                [isFound, tmp] = ismember(outlier.satelliteSelection.satIDs(:), candidatesId);
                 selectedIdx = candidatesIdx(tmp(isFound));
                 affectedSatIdx = [affectedSatIdx; selectedIdx(:)];
             end
 
             
             info.requestedSatellites = ...
-                outlier.satIDs(:).';
+                outlier.satelliteSelection.satIDs(:).';
 
         % ---------------------------------------------------------
         case 'all'
@@ -364,7 +411,7 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
         case 'random_sv_all_cons'
             candidates = 1:nSat;
             nChoose = min( ...
-                outlier.nSat, ...
+                outlier.satelliteSelection.nSat, ...
                 numel(candidates));
             order = randperm(numel(candidates),nChoose);
             affectedSatIdx = candidates(order);
@@ -372,7 +419,7 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
         % ---------------------------------------------------------
         case 'random_sv_selected_cons'
             cons = normalizeConstellationList( ...
-                outlier.constellations);
+                outlier.satelliteSelection.constellations);
             candidates = [];
             for i = 1:numel(cons)
                 field = constellationField(cons{i});
@@ -382,7 +429,7 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
             end
             candidates = unique(candidates, 'stable');
             nCandidates = numel(candidates);
-            nChoose = min( outlier.nSat, nCandidates);
+            nChoose = min( outlier.satelliteSelection.nSat, nCandidates);
             order = randperm(nCandidates,nChoose);
             affectedSatIdx = candidates(order);
             info.selectedConstellations = cons;
@@ -390,12 +437,12 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
         % ---------------------------------------------------------
         case 'random_sv_multi_constellation'
             cons = normalizeConstellationList( ...
-                outlier.constellations);
+                outlier.satelliteSelection.constellations);
 
             if isempty(cons)
                 error('outlier.constellations is missing in outliersProfile(%d).', iOutlier);
             end
-            if numel(outlier.nSatPerConstellation) ~= ...
+            if numel(outlier.satelliteSelection.nSatPerConstellation) ~= ...
                     numel(cons)
                 error('outlier.nSatPerConstellation in outliersProfile(%d) must contain one value per constellation.', iOutlier );
             end
@@ -411,7 +458,7 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
                 candidates = ...
                     satIdx.(field);
                 nChoose = min( ...
-                    outlier.nSatPerConstellation(i), ...
+                    outlier.satelliteSelection.nSatPerConstellation(i), ...
                     numel(candidates));
                 order = randperm( ...
                     numel(candidates),nChoose);
@@ -424,17 +471,19 @@ function [affectedSatIdx,info] = selectAffectedSatellites( ...
        % ---------------------------------------------------------
         case 'reuse_previous_selection'
 
-            refOutlier = iOutlier-1;
+            if isempty(outlierLog)
+                error('No previous satellite selection available.');
+            end
 
-            affectedSatIdx = outlierLog(refOutlier).selectedSatellites;
+            affectedSatIdx = outlierLog(end).selectedSatellites;
 
             info.requestedSatellites = affectedSatIdx;
             info.selectedConstellations = ...
-                outlierLog(refOutlier).selectedConstellations;
+                outlierLog(end).selectedConstellations;
 
 
         otherwise
-            error('Unknown outlier.mode: %s in outliersProfile(%d).',mode,iOutlier);
+            error('Unknown outlier.satelliteSelection.mode: %s in outliersProfile(%d).',mode,iOutlier);
     end
 
     affectedSatIdx = unique(affectedSatIdx,'stable');
@@ -467,8 +516,8 @@ function freqIdx = selectOutlierFrequencies(fault,nFreq)
 end
 
 % ========================================================================
-function obs = injectAdditionalNoise( ...
-    obs,epochIdx,satIdx,freqIdx,outlier,cfg)
+function [obs, indicesOutlier] = injectAdditionalNoise( ...
+    obs_ideal,obs,epochIdx,nSat,freqIdx,outlier,cfg)
 % Increase observation STD by outlier.noiseScale.
 %
 % If sigma_outlier = scale * sigma_nominal, additional independent
@@ -479,36 +528,76 @@ function obs = injectAdditionalNoise( ...
 %
 % This avoids incorrectly multiplying the already-existing sample.
 
-    scale = outlier.noiseScale;
-    sigma_nominal = cfg.gnss.pseudorangeSigma;
+    candidates = 1:nSat;
+    n = numel(candidates);
+    nEpochs = numel(epochIdx);
+    scale = outlier.noise.scale;
+    sigma = cfg.gnss.pseudorangeSigma;
+    eps             = outlier.satelliteSelection.fraction;
+    model   = lower(outlier.noise.model);
+    mu_out  = outlier.noise.mean;
 
     if scale < 1
         error('noiseScale must be >= 1.');
     end
 
-    sigmaCode0 = sigma_nominal;
+    %----------------------------------------------------------------------
+    % Base Gaussian noise (nominal, mean 0)
+    %----------------------------------------------------------------------
+    noise = sigma * randn(n, nEpochs);
 
-    sigmaAddCode = ...
-        sigmaCode0 * sqrt(scale^2 - 1);
+    %----------------------------------------------------------------------
+    % Randomly select which samples are outliers
+    %----------------------------------------------------------------------
+    nOut = round(n * eps);
+    indicesOutlier = randperm(n, nOut);
 
-    for f = freqIdx(:).'
+    %----------------------------------------------------------------------
+    % Generate outlier noise samples
+    %----------------------------------------------------------------------
+    switch model
+        case 'gaussian'
+            outliers = mu_out + sqrt(scale) * sigma * randn(nOut, nEpochs);
 
-        switch lower(outlier.observation)
+        case 'laplacian'
+            u = rand(nOut, nEpochs) - 0.5;
+            outliers = mu_out - sign(u) .* sqrt(scale/2) * sigma .* log(1 - 2*abs(u));
 
-            case 'code'
+        case {'student-t', 'student'}
+            dof = 2*sigma^2*scale/(sigma^2*scale-1);
+            if dof<=2
+                warning('Corresponding DOF value in the t distribution is lower than 2');
+            end
+            outliers = mu_out + trnd(dof, nOut, nEpochs);
 
-                obs(satIdx,epochIdx,f) = ...
-                    obs(satIdx,epochIdx,f) + ...
-                    sigmaAddCode * ...
-                    randn(numel(satIdx),numel(epochIdx));
+        otherwise
+            error('Unknown outlier model: %s', model);
+    end
 
-            case 'none'
+    %----------------------------------------------------------------------
+    % Replace nominal samples by outliers
+    %----------------------------------------------------------------------
+    noise(indicesOutlier, :) = outliers;
 
-                % no observation modification
-
-            otherwise
-
-                error('Unknown observation type.');
+    for k = 1:numel(epochIdx)
+        for f = freqIdx(:).'
+    
+            switch lower(outlier.observation)
+    
+                case 'code'
+    
+                    obs(:,epochIdx(k),f) = ...
+                        obs_ideal(:,epochIdx(k),f) + ...
+                        noise(:, k, f);
+    
+                case 'none'
+    
+                    % no observation modification
+    
+                otherwise
+    
+                    error('Unknown observation type.');
+            end
         end
     end
 end
@@ -582,6 +671,20 @@ function magnitude = generateOutlierMagnitude(model,timeSec,iOutlier)
             magnitude = ...
                 model.magnitudeMean + ...
                 model.magnitudeStd .* randn(size(t));
+
+        % ---------------------------------------------------------
+        case {'student-t', 'student'}
+
+            nu = model.magnitudeDoF;
+
+            if ~isscalar(nu) || ~isfinite(nu) || nu <= 2
+                error('magnitudeDoF must be greater than 2.');
+            end
+
+            scale = model.magnitudeStd * sqrt((nu - 2)/nu);
+
+            magnitude = model.magnitudeMean + ...
+                scale * trnd(nu, numel(t), 1);
 
         % ---------------------------------------------------------
         case 'random_walk'

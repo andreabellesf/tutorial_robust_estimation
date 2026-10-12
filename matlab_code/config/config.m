@@ -89,9 +89,12 @@ cfg.filters.tuning.Tukey        = 4.6851;
 cfg.filters.nIterRKF      = 20;
 cfg.filters.stateTol      = 1e-7;
 
+% Outlier detectors
+cfg.filters.significanceLevel    = 0.01;      % [-] significance level 
+
 %% Outliers / faults profile
 cfg.outliers.enabled            = true;
-cfg.outliers.profileFilename    = "configOutliersProfile_test_3";
+cfg.outliers.profileFilename    = "configOutliersProfile_test_0";
 
 %% Metrics
 
