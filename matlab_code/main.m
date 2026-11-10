@@ -49,7 +49,7 @@ fprintf('\n--------------------------------------\n');
 
 fprintf('\nSetting up cofiguration...\n');
 
-cfg = config();
+cfg = nominal_scenario_config();
 
 rng(cfg.simulation.randomSeed);
 
@@ -74,8 +74,7 @@ scenario = generateScenario(cfg);
 
 rng(cfg.simulation.randomSeed);
 
-example = generateMonteCarloRealization( ...
-    scenario, cfg);
+example = generateMonteCarloRealization( scenario, cfg);
 
 %% 3. Plot generated scenario
 

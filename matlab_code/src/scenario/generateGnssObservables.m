@@ -44,6 +44,8 @@ if cfg.gnss.enabledGAL
     satelliteIdx = [satelliteIdx; satelliteIdxGAL(:)];  
 end
 
+%%%%%%% DM: there is no clock offset added here! 
+
 %% Store satellite-related info and ideal measurements
 gnss.idealPseudorange = trueRho;
 gnss.satellitePosition.ENU = data_enu.satellite_positions;

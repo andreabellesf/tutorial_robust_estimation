@@ -4,7 +4,7 @@ nRuns = cfg.monteCarlo.numRuns;
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
 nObs = scenario.gnss.nSatellites;
-[~, nState] = stateIndex();
+[~, nState] = stateIndex(nObs);
 
 mcEstimationResults = struct();
 mcEstimationFilters = cell(1, nRuns);
@@ -26,8 +26,9 @@ for iRun = 1:nRuns
     rng(cfg.monteCarlo.baseSeed + iRun);
 
     %% Generate realization-specific measurements
-    trial = generateMonteCarloRealization( ...
-        scenario, cfg);
+    trial = generateMonteCarloRealization( scenario, cfg);
+
+    % % % trial = generateNoise( scenario, cfg);
 
     %% Inject outliers / faults into GNSS measurements
     if cfg.outliers.enabled

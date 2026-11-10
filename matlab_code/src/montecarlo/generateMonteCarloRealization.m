@@ -9,14 +9,13 @@ function trial = generateMonteCarloRealization(scenario, cfg)
 
     nObsPerEpoch = scenario.gnss.nSatellites;
 
-    pseudorangeSigmaSq = cfg.gnss.pseudorangeSigma^2;
+    pseudorangeSigmaSq = cfg.noisemodel.pseudorangeSigma^2;
 
     R = diag( pseudorangeSigmaSq*ones(1,nObsPerEpoch) );
     
     noise = mgd( cfg.simulation.nEpochs, nObsPerEpoch, zeros(1,nObsPerEpoch), R ).';
 
-    trial.gnss.pseudorange = ...
-        scenario.gnss.idealPseudorange + noise;
+    trial.gnss.pseudorange = scenario.gnss.idealPseudorange + noise;
 
     %% Store true measurement errors
     trial.gnss.truePseudorangeError = noise;

@@ -2,9 +2,10 @@ function filter = runEKF(trial, scenario, cfg)
 % Conventional EKF using GNSS pseudorange observations
 
 n = cfg.simulation.nEpochs;
+nCons = cfg.filters.nCons;
 
 %% State indexing and variable initialization
-[idx, nx] = stateIndex();
+[idx, nx] = stateIndex(nCons);
 
 x = zeros(nx, 1);
 P = zeros(nx);
@@ -19,15 +20,17 @@ neesFullState = zeros(1,n);
 neesPos = zeros(1,n);
 neesVel = zeros(1,n);
 
-%% Initial state
+%% Initialization state
+% Iniial mean of the state
 x(idx.pos) = cfg.filters.initialPosition;
 x(idx.vel) = cfg.filters.initialVelocity;
+x(idx.clk) = zeros(nCons,1);
 
-P(idx.pos,idx.pos) = ...
-    cfg.filters.initPosSigma^2 * eye(3);
+% Initial covariance matrix
+P(idx.pos,idx.pos) = cfg.filters.initPosSigma^2 * eye(3);
+P(idx.vel,idx.vel) = cfg.filters.initVelSigma^2 * eye(3);
+P(idx.clk,idx.clk) = cfg.filters.initClkSigma^2 * eye(nCons);
 
-P(idx.vel,idx.vel) = ...
-    cfg.filters.initVelSigma^2 * eye(3);
 
 %% Dynamic model
 [F, Q] = dynamicModel(cfg.simulation.dt, cfg);

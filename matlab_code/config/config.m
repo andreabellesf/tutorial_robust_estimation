@@ -32,12 +32,13 @@ cfg.filename.gnssData.satelliteInformation = 'opensky_SatelliteInformation';
 cfg.simulation.randomSeed = 42;
 cfg.simulation.freqGnss = 1; 
 cfg.simulation.dt       = 1/cfg.simulation.freqGnss;       % [s]
-cfg.simulation.nEpochs  = 60;       % [-]
-cfg.simulation.nFreq    = 1; % Do not change
+
+cfg.simulation.nEpochs  = 1000;       % [-]
+cfg.simulation.nFreq    = 1;
 
 %% Monte Carlo
 
-cfg.monteCarlo.numRuns = 1;
+cfg.monteCarlo.numRuns = 20;
 cfg.monteCarlo.baseSeed = 1000;
 cfg.monteCarlo.showProgress = true;
 

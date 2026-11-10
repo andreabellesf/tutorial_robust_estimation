@@ -2,7 +2,8 @@ function [estimation, results]  = runMonteCarloRealization(trial, scenario, cfg)
 
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
-[~, nState] = stateIndex();
+nCons = cfg.simulation.nCons;
+[~, nState] = stateIndex(nCons);
 
 results = struct();
 
@@ -28,7 +29,10 @@ for m = 1:nFilters
             estimation.(filtername) = runRKF( ...
                 trial, scenario, cfg, filtername);
 
-        % case '...'
+
+        case 'Consensus-EKF'
+            result.(filtername) = runConsensusEKF( ...
+                trial, scenario, cfg, filtername);
 
         otherwise
 
