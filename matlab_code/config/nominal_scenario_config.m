@@ -23,13 +23,16 @@ cfg.paths.results     = fullfile(cfg.paths.root, 'results');
 cfg.paths.figures     = fullfile(cfg.paths.results, 'figures');
 
 % Data filenames
-cfg.filename.gnssData = 'opensky_2022_neustrelitz_satellite_positions_enu';
+cfg.filename.gnssData.ecef = 'opensky_2022_neustrelitz_satellite_positions';
+cfg.filename.gnssData.enu = 'opensky_2022_neustrelitz_satellite_positions_enu';
+cfg.filename.gnssData.satelliteInformation = 'opensky_SatelliteInformation';
 
 
 %% Simulation
 
 cfg.simulation.randomSeed = 42;
 cfg.simulation.dt       = 1;       % [s]
+cfg.simulation.nFreq    = 1; % Number of frequencies
 cfg.simulation.nEpochs  = 1000;       % [-]
 cfg.simulation.nCons    = 1; % Number of GNSS constellations
 
@@ -46,6 +49,7 @@ cfg.monteCarlo.showProgress = true;
 cfg.trajectory.type = "constant_velocity";
 cfg.trajectory.initialDate=[2022 12 13 9 0 0];     % Insert initial time [year month day 
 % hour minutes seconds]
+cfg.trajectory.initialPositionLLH = [53.3295056 13.0717511 10]; % Receiver location for the skyplot [deg; deg; m]
 cfg.trajectory.initialPosition = [0 0 0]; % [53.3295056 13.0717511 10];  % Initial location in 
 % latitude, longitude and height [deg; deg; m]
 cfg.trajectory.initialVelocity = [0 0 0];  % initial velocity in ENU frame [m/s; m/s; m/s]
@@ -59,6 +63,11 @@ cfg.trajectory.initClkSigma = 10^5;    % m (initial std for the clk offset (equa
 cfg.trajectory.velocitySigma = [0.1;0.1;0.1]; % Standard deviation for the velocity, expressed in the ENU frame, in [m/s/s]
 cfg.trajectory.clkSigma = 1; % in [m/s] Random Walk description for the evolution of the clock offsets (equal for all GNSS constellations)
 
+%% GNSS constellations
+cfg.gnss.enabledGPS       = true;
+cfg.gnss.enabledGAL       = true;
+cfg.gnss.elevationMask    = 5;       % degrees
+
 
 %% Observations noise and fault configuration
 cfg.noisemodel.type = "gaussian";
@@ -69,13 +78,16 @@ cfg.noisemodel.faultsTimes = [300 500; 600 700];
 cfg.noisemodel.faultsType = "gaussian";
 cfg.noisemodel.fractionOutlier = [0.25; 0.50]; % fraction of satellites
 
+%% Outliers / faults profile (see configOutliersProfile_test_*.m)
+cfg.outliers.enabled            = false;
+cfg.outliers.profileFilename    = "configOutliersProfile_test_0";
 
 %% Navigation filters
 
 cfg.filters.enabled = { ...
     'EKF', ...
-    'Huber', ...
-    'Consensus-EKF'};
+    'Huber'};
+    % 'Consensus-EKF' disabled until RANSAC_ranges.m is finished
 
 cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s 
@@ -118,6 +130,8 @@ cfg.plot.metrics    = true;
 cfg.plot.position   = true;
 cfg.plot.velocity   = true;
 cfg.plot.residuals  = true;
+
+cfg.plot.selectedMc = 1;
 
 cfg.plot.saveFigures = false;
 cfg.plot.outputFolder = "figures";
