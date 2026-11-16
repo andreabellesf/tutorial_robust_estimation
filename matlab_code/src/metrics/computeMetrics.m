@@ -28,8 +28,8 @@ neesPos = mcEstimationResults.neesPos;
 neesVel = mcEstimationResults.neesVel;
 residuals = mcEstimationResults.residuals;
 
-[idx, ~] = stateIndex();
 [nFilters, nState, nEpochs, nRuns] = size(err);
+[idx, ~] = stateIndex(nState - 6); % state = [pos(3); vel(3); clk(nCons)]
 nPos = numel(idx.pos);
 nVel = numel(idx.vel);
 

@@ -4,14 +4,15 @@ nRuns = cfg.monteCarlo.numRuns;
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
 nObs = scenario.gnss.nSatellites;
-[~, nState] = stateIndex(nObs);
+[~, nState] = stateIndex(cfg.simulation.nCons);
 
 mcEstimationResults = struct();
 mcEstimationFilters = cell(1, nRuns);
 mcData = cell(1, nRuns);
+outliersLog = []; % stays empty when outliers are disabled
 
 mcEstimationResults.estimationError = nan(nFilters, nState, nEpochs, nRuns);
-mcEstimationResults.neesFullSate = nan(nFilters, nEpochs, nRuns);
+mcEstimationResults.neesFullState = nan(nFilters, nEpochs, nRuns);
 mcEstimationResults.neesPos = nan(nFilters, nEpochs, nRuns);
 mcEstimationResults.neesVel = nan(nFilters, nEpochs, nRuns);
 mcEstimationResults.residuals = nan(nFilters, nObs, nEpochs, nRuns);

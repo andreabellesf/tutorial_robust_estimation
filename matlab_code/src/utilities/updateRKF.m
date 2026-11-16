@@ -1,12 +1,12 @@
 function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsPerEpoch, cfg, filtername)
 
-    [idx, nx] = stateIndex();    
+    nx = length(xPred);    
     m  = length(y);
 
     % Make sure measurement vector is a column
     y = y(:);
 
-    [~,H,R] = observationModel(xPred(idx.pos), satPos, nObsPerEpoch, cfg);
+    [~,H,R] = observationModel(xPred, satPos, nObsPerEpoch, cfg);
 
     [L,~] = chol(R,'lower');
 
@@ -23,7 +23,7 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsP
     % Robust EKF loop
     for it = 1:cfg.filters.nIterRKF
 
-        [h,~,~] = observationModel(xIter(idx.pos), satPos, nObsPerEpoch, cfg);
+        [h,~,~] = observationModel(xIter, satPos, nObsPerEpoch, cfg);
         
         residuals = y - h;
 
