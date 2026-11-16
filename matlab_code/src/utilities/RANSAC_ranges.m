@@ -79,7 +79,7 @@ if ~isequal(size(svPos), [nObs,3])
     error('svPos must be an Nx3 matrix.');
 end
 
-if required_number_of_iterations < 4
+if nObs < minimum_subset_size
     error('At least four satellite measurements are required.');
 end
 
