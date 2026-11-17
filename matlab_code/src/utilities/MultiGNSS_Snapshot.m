@@ -1,176 +1,158 @@
-function varargout = MultiGNSS_Snapshot( varargin )
-%**************************************************************************
-%function varargout = MultiGNSS_Snapshot( varargin )
+function [pos, clkOffset, residuals, P, G, reliable] = ...
+    MultiGNSS_Snapshot( ...
+    pseudorange, satPos, clockMatrix, varargin)
+%MULTIGNSS_SNAPSHOT Weighted least-squares GNSS positioning.
 %
-% Date: 06.08.2018
-% DLR - Institute of Communications and Navigation
-% Daniel Arias Medina
+% [pos, clkOffset, residuals, P, G, reliable] = ...
+%     MultiGNSS_Snapshot_refactored(pseudorange, satPos, clockMatrix, ...)
 %
-% Calculate the position using GNSS observations in a single point
-% positioning manner.
-% Minimal inputs:
-%  - pseudorange
-%  - SV_position
+% Required inputs (full observation set, before subsetting):
+%   pseudorange  - N-by-1 corrected pseudoranges, in metres.
+%   satPos  - N-by-3 satellite ECEF positions, in metres.
+%   clockMatrix  - N-by-K clock indicator/design matrix. Examples:
+%                  ones(N,1) for a shared receiver clock;
+%                  [ones(nGPS,1),zeros(nGPS,1);
+%                   zeros(nGAL,1),ones(nGAL,1)] for separate clocks.
 %
-%  Properties:
-%    R_matrix
-%    GNSS_type
-%    subset
-%    initial_position
-%    max_iterations
-%    error_tolerance
-%    condition_check
+% Name-value options:
+%   'subset'           - Selected observation indices or N-element logical
+%                        mask. [] (default) means all observations.
+%   'obsCovR'   - N-by-N covariance for the full observations, or
+%                        M-by-M covariance already restricted to subset.
+%                        Default: identity covariance.
+%   'initPosition' - Initial ECEF position, 3-by-1 (default [0;0;0]).
+%   'initClockOffset' - Initial receiver clock offset, nCons-by-1 (default [0;0]).
+%   'maxIter'   - Maximum WLS iterations (default 100).
+%   'errorTol'  - Position-update convergence tolerance, m (1e-6).
+%   'conditionCheck'  - Maximum condition number of weighted G (1000).
 %
-% Output Parameters:
-%   Position
-%   Clockoffset
-%   Residuals
-%   P
-%   G
+% Outputs correspond to selected observations:
+%   pos   - 3-by-1 estimated ECEF receiver position, metres.
+%   clkOffset  - K-by-1 receiver clock biases, in metres (divide by c for s).
+%   residuals  - M-by-1 post-fit pseudorange residuals, metres.
+%   P          - (3+K)-by-(3+K) formal state covariance.
+%   G          - M-by-(3+K) final design matrix.
+%   reliable   - True if solution is valid and converged.
 %
-% Reference:
-%       - GNSS Data processing: Volume I: Fundamentals and Algorithms, from
-%       Jaume Sant Subirana, edited by ESA.
-%
-%**************************************************************************
+% The clock columns must have full column rank among selected observations.
 
-% Default parameters
-pseudorange = varargin{1};
-SV_position = varargin{2};
-
-nSatellites = length(pseudorange);
-R_matrix = eye( nSatellites );
-GNSS_type = nSatellites;
-subset = [1:1:nSatellites];
-initial_position = [0;0;0];
-max_iterations = 100;
-error_tolerance = 10^-6;
-condition_check = 1000;
-% Handle input arguments
-if nargin > 2
-    pseudorange = varargin{1};
-    SV_position = varargin{2};
-    for idx = 1:length(varargin)
-        if ischar( varargin{idx} )
-            switch lower(varargin{idx})
-                case 'r_matrix'
-                    R_matrix = varargin{idx+1};
-                case 'gnss_type'
-                    GNSS_type = varargin{idx+1};
-                case 'subset'
-                    subset = varargin{idx+1};
-                case 'initial_position'
-                    initial_position = varargin{idx+1};
-                case 'max_iterations'
-                    max_iterations = varargin{idx+1};
-                case 'error_tolerance'
-                    error_tolerance = varargin{idx+1};
-                case 'condition_check'
-                    condition_check = varargin{idx+1};
-                otherwise
-                    error(['Unrecognized variable: ' varargin{idx}])
-            end
-        end
+    pseudorange = pseudorange(:);
+    nSat = numel(pseudorange);
+    nCons = size(clockMatrix,2);
+    validateattributes(satPos, {'numeric'}, {'real','finite','size',[nSat,3]}, mfilename, 'satPos');
+    validateattributes(clockMatrix, {'numeric','logical'}, {'real','finite','2d'}, mfilename, 'clockMatrix');
+    if size(clockMatrix,1) ~= nSat || size(clockMatrix,2) < 1
+        error('clockMatrix must have N rows and at least one clock column.');
     end
-elseif nargin<2
-    error('Wrong number of inputss')
-end
-              
+    validateattributes(pseudorange, {'numeric'}, {'real','finite'}, mfilename, 'pseudorange');
 
+    parser = inputParser;
+    parser.FunctionName = mfilename;
+    addParameter(parser, 'subset', [], @(x) isnumeric(x) || islogical(x));
+    addParameter(parser, 'obsCovR', [], @(x) isnumeric(x) && ismatrix(x));
+    addParameter(parser, 'initPosition', [0;0;0], @(x) isnumeric(x) && isreal(x) && numel(x)==3 && all(isfinite(x(:))));
+    addParameter(parser, 'initClockOffset', [0;0], @(x) isnumeric(x) && isreal(x) && numel(x)==nCons && all(isfinite(x(:))));
+    addParameter(parser, 'maxIter', 100, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>=1 && x==floor(x));
+    addParameter(parser, 'errorTol', 1e-6, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>0);
+    addParameter(parser, 'conditionCheck', 1000, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>0);
+    parse(parser, varargin{:});
+    opts = parser.Results;
 
-
-
-% Initialization of the variables
-GNSS_type(GNSS_type==0) = [];
-Number_of_constellation = length(GNSS_type);
-G          = zeros(nSatellites,3+Number_of_constellation);
-for i = 1:Number_of_constellation
-    if i==1
-        G(1:GNSS_type(i),3+i)         = 1;
+    % Resolve subset once, then apply it consistently to all observation data.
+    subset = opts.subset;
+    if isempty(subset)
+        subset = (1:nSat).';
+    elseif islogical(subset)
+        if numel(subset) ~= nSat
+            error('Logical subset must have N elements.');
+        end
+        subset = find(subset(:));
     else
-        G( sum(GNSS_type(1:i-1))+1 : sum(GNSS_type(1:i)), 3+i)         = 1;
-    end
-end
-y              = zeros(nSatellites,1);
-d = zeros(nSatellites,1);
-iteration        = 0;
-position_change = error_tolerance + 1;
-Position = initial_position;
-CLKoffset = zeros(Number_of_constellation,1);
-P = zeros( 3 + Number_of_constellation );
-residuals = zeros(nSatellites);
-reliable = 1;
-% Iterative LS method to estimate position
-is_not_nan_condition = ~any(isnan(Position)) && ~any(isnan(pseudorange)) && ~any(isnan(SV_position(:))) && ~any(isnan(R_matrix(:))) ;
-if nSatellites >= 3+Number_of_constellation && is_not_nan_condition
-    while iteration < max_iterations && position_change > error_tolerance
-        iteration = iteration + 1;
-        for iSV = 1:nSatellites
-            d(iSV) = sqrt( (Position(1)-SV_position(iSV,1))^2 + (Position(2)-SV_position(iSV,2))^2 + (Position(3)-SV_position(iSV,3))^2 ); % Distance from the satellites to the iteratively-changing target position
-            y(iSV) = pseudorange(iSV) - d(iSV) - CLKoffset'*G(iSV,4:end)'; % Difference between the pseudorange (including corrections) and the previous distance
-            G(iSV,1:3) = [ (Position(1)-SV_position(iSV,1))/d(iSV), (Position(2)-SV_position(iSV,2))/d(iSV), (Position(3)-SV_position(iSV,3))/d(iSV)]; % Construction of the G measurement matrix
+        subset = subset(:);
+        if any(~isfinite(subset) | subset~=floor(subset) | subset<1 | subset>nSat) || numel(unique(subset))~=numel(subset)
+            error('subset must contain unique integer indices between 1 and N.');
         end
-        % G_used = G(subset,:);
-        G_used = G;
-        if cond(G_used) < condition_check
-            %Least square method
-            estimatedState = (G_used' * inv(R_matrix) * G_used) \ G_used' * inv(R_matrix) * y;
-            oldPosition = Position;
-            Position   = Position + estimatedState(1:3);
-            CLKoffset  = CLKoffset + estimatedState(4:end);
-            P   = inv(G_used' * inv(R_matrix) * G_used);
-            position_change = norm(oldPosition - Position);
-            residuals = pseudorange - d - [CLKoffset'*G_used(:,4:end)']';
-        else
-            warning('Condition check failed')
-            Position = NaN(3,1);
-            CLKoffset = NaN;
-            P = NaN(Number_of_constellation+1);
-            residuals = NaN(nSatellites,1);
-            reliable = 0;
-            break;
-        end  
     end
-    
-else
-    warning('Not enough satellites!')
-    Position = NaN(3,1);
-    CLKoffset = NaN(Number_of_constellation,1);
-    P = NaN(Number_of_constellation+1);
-    residuals = NaN(nSatellites,1);
-    reliable = 0;
-end
 
+    yObs = pseudorange(subset);
+    sv = satPos(subset,:);
+    C = double(clockMatrix(subset,:));
+    m = numel(subset);
+    nClock = size(C,2);
+    nState = 3 + nClock;
 
-if nargout == 1
-    varargout{1} = Position;
-elseif nargout == 2
-    varargout{1} = Position;
-    varargout{2} = CLKoffset;
-elseif nargout == 3
-    varargout{1} = Position;
-    varargout{2} = CLKoffset;
-    varargout{3} = residuals;
-elseif nargout == 4
-    varargout{1} = Position;
-    varargout{2} = CLKoffset;
-    varargout{3} = residuals;
-    varargout{4} = P;
-elseif nargout == 5
-    varargout{1} = Position;
-    varargout{2} = CLKoffset;
-    varargout{3} = residuals;
-    varargout{4} = P;
-    varargout{5} = G;
-elseif nargout == 6
-    varargout{1} = Position;
-    varargout{2} = CLKoffset;
-    varargout{3} = residuals;
-    varargout{4} = P;
-    varargout{5} = G;
-    varargout{6} = reliable;
-else
-    varargout = [];
-end
+    R = opts.obsCovR;
+    if isempty(R)
+        R = eye(m);
+    elseif isequal(size(R), [nSat,nSat])
+        R = R(subset,subset);
+    elseif ~isequal(size(R), [m,m])
+        error('obsCovR must be N-by-N or M-by-M, where M=numel(subset).');
+    end
+    if ~isreal(R) || any(~isfinite(R(:))) || ~isequal(R,R.')
+        error('Observation covariance must be real, finite and symmetric.');
+    end
+    [L,cholFlag] = chol(R,'lower');
+    if cholFlag ~= 0
+        error('Observation covariance must be positive definite.');
+    end
 
+    pos = opts.initPosition(:);
+    % clkOffset = zeros(nClock,1);
+    clkOffset = opts.initClockOffset(:);
+    G = NaN(m,nState);
+    residuals = NaN(m,1);
+    P = NaN(nState,nState);
+    reliable = false;
+
+    if m < nState || rank(C) < nClock
+        warning('Insufficient observations or missing constellation clock observability.');
+        pos(:) = NaN;
+        clkOffset(:) = NaN;
+        return;
+    end
+
+    for iteration = 1:opts.maxIter
+        delta = pos.' - sv;              % M-by-3 receiver-minus-SV vectors
+        distance = sqrt(sum(delta.^2,2));     % M-by-1 geometric ranges
+        if any(distance <= 0)
+            warning('Receiver position coincides with a satellite position.');
+            break;
+        end
+        G = [delta ./ distance, C];
+        innovation = yObs - distance - C*clkOffset;
+
+        % Whitened WLS: minimizes ||L\(G*step - innovation)||^2.
+        A = L\G;
+        b = L\innovation;
+        if rank(A) < nState || cond(A) >= opts.conditionCheck
+            warning('GNSS geometry is rank deficient or poorly conditioned.');
+            break;
+        end
+        step = A\b;
+        pos = pos + step(1:3);
+        clkOffset = clkOffset + step(4:end);
+
+        if norm(step(1:3)) <= opts.errorTol
+            % Recompute G and residuals at the final estimated state.
+            delta = pos.' - sv;
+            distance = sqrt(sum(delta.^2,2));
+            if any(distance <= 0), break; end
+            G = [delta ./ distance, C];
+            A = L\G;
+            if rank(A) < nState || cond(A) >= opts.conditionCheck
+                break;
+            end
+            residuals = yObs - distance - C*clkOffset;
+            P = (A.'*A)\eye(nState);
+            reliable = true;
+            return;
+        end
+    end
+
+    % A nonconverged/invalid solution is explicitly marked as unusable.
+    pos(:) = NaN;
+    clkOffset(:) = NaN;
+    G(:) = NaN;
+    warning('GNSS WLS solution did not converge to a reliable solution.');
 end

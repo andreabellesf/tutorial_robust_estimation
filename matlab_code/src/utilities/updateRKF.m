@@ -1,11 +1,11 @@
-function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObs, idxSvPerCons, cfg, filtername)
+function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObs, clkMatrix, cfg, filtername)
 
     [idx, nx] = stateIndex(cfg.simulation.nCons);    
 
     % Make sure measurement vector is a column
     y = y(:);
 
-    [~,H,R] = observationModel(xPred, satPos, nObs, idxSvPerCons, cfg);
+    [~,H,R] = observationModel(xPred, satPos, nObs, clkMatrix, cfg);
 
     [L,~] = chol(R,'lower');
 
@@ -22,7 +22,7 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObs,
     % Robust EKF loop
     for it = 1:cfg.filters.rkf.maxIter
 
-        [h,~,~] = observationModel(xIter, satPos, nObs, idxSvPerCons, cfg);
+        [h,H,~] = observationModel(xIter, satPos, nObs, clkMatrix, cfg);
         
         residuals = y - h;
 
@@ -45,8 +45,8 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObs,
         W = diag(w);
 
         % Convergence
-        dxConv = norm(xNew-xIter);
-                     
+        dxConv = norm(xNew-xIter);                     
+        
         xIter = xNew;
 
         if dxConv < cfg.filters.rkf.stateTol 

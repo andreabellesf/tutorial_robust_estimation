@@ -1,5 +1,5 @@
 function filter = runConsensusEKF(trial, scenario, cfg)
-% Conventional EKF using GNSS pseudorange observations
+% Outlier detection for GNSS pseudorange measurements based on RANSAC
 
 n = cfg.simulation.nEpochs;
 nCons = cfg.simulation.nCons;
@@ -29,6 +29,9 @@ neesFullState = zeros(1,n);
 neesPos = zeros(1,n);
 neesVel = zeros(1,n);
 
+sppState.x = zeros(nx, 1);
+sppState.P = zeros(nx);
+
 %% Initialization state
 % Iniial mean of the state
 x(idx.pos) = cfg.filters.initialPosition;
@@ -52,7 +55,7 @@ for k = 1:n
     pseudorangeEpoch  = trial.gnss.pseudorange(:,k);
     [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition, ...
                                                         pseudorangeEpoch);
-    idxSvPerCons = trial.gnss.satelliteIdx(idxValidSat, :);
+    clockMatrix = trial.gnss.satelliteIdx(idxValidSat, :);
     satPos = trial.gnss.satellitePosition(idxValidSat,:);
     pseudorange = pseudorangeEpoch(idxValidSat);
 
@@ -65,12 +68,16 @@ for k = 1:n
 
     %% Update step
 
-    % % Get SPP for cross-checking
-    positionSPP = MultiGNSS_Snapshot(y, satPos, idxSvPerCons, cfg);
-     
-    bestInliers = RANSAC_ranges(y, satPos, positionSPP, nObsPerEpoch, cfg);
+    % Get SPP for cross-checking
+    [posSPP, clkSPP, ~, ~, ~, ~] = MultiGNSS_Snapshot( ...
+    y, satPos, clockMatrix);
+    sppState.x(idx.pos) = posSPP;
+    sppState.x(idx.clk) = clkSPP;
 
-    [xEst,PEst,residuals_best] = updateEKF(xPred, PPred, y(bestInliers), satPos(bestInliers,:), length(bestInliers), idxSvPerCons, cfg);
+    [bestInliers, info] = snapshotRANSAC( ...
+    y, satPos, clockMatrix, xPred, PPred, sppState, cfg); 
+
+    [xEst,PEst,residuals_best] = updateEKF(xPred, PPred, y(bestInliers), satPos(bestInliers,:), length(bestInliers), clockMatrix(bestInliers, :), cfg);
     residuals(bestInliers) = residuals_best;
     
     %% Compute errors and NEES

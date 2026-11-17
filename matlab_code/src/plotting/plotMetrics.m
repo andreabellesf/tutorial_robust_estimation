@@ -18,7 +18,7 @@ f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
-    filtername = cfg.filters.enabled{iFilter};
+    filtername = cfg.filters.names{iFilter};
 
     plotBand(t, ...
         metrics.position.p05(iFilter,:), ...
@@ -50,7 +50,7 @@ if cfg.noisemodel.outliers.enabled
     addFaultPatches(axs, cfg);
 end
 
-if cfg.save.enabled
+if cfg.plot.saveFigures
     saveFig(f,cfg,['Fig_Pos_3D_RMSE']);
 end
 
@@ -60,7 +60,7 @@ f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
-    filtername = cfg.filters.enabled{iFilter};
+    filtername = cfg.filters.names{iFilter};
 
     plot(t, metrics.nees.position.nanees(iFilter,:), ...
         'LineWidth',2,'Color', C(iFilter,:), ...
@@ -92,7 +92,7 @@ if cfg.noisemodel.outliers.enabled
     addFaultPatches(axs, cfg);
 end
 
-if cfg.save.enabled
+if cfg.plot.saveFigures
     saveFig(f,cfg,['Fig_Pos_Only_ANEES']);
 end
 
@@ -102,7 +102,7 @@ f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
-    filtername = cfg.filters.enabled{iFilter};
+    filtername = cfg.filters.names{iFilter};
 
     plot(t, metrics.nees.fullState.nanees(iFilter,:), ...
         'LineWidth',2,'Color', C(iFilter,:), ...
@@ -134,7 +134,7 @@ if cfg.noisemodel.outliers.enabled
     addFaultPatches(axs, cfg);
 end
 
-if cfg.save.enabled
+if cfg.plot.saveFigures
     saveFig(f,cfg,['Fig_Full_State_ANEES']);
 end
 
@@ -144,7 +144,7 @@ f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
-    filtername = cfg.filters.enabled{iFilter};
+    filtername = cfg.filters.names{iFilter};
 
     plot(t, metrics.residuals.meanNorm(iFilter,:), ...
         'LineWidth',2,'Color', C(iFilter,:), ...
@@ -171,7 +171,7 @@ if cfg.noisemodel.outliers.enabled
     addFaultPatches(axs, cfg);
 end
 
-if cfg.save.enabled
+if cfg.plot.saveFigures
     saveFig(f,cfg,['Fig_Est_Residuals']);
 end
 

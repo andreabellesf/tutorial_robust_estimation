@@ -35,8 +35,7 @@ for iRun = 1:nRuns
 
     %% Run all enabled filters
     [estimationFilters, ...
-        estimationResults] = runFilters( ...
-        trial, scenario, cfg);
+        estimationResults] = runFilters( trial, scenario, cfg);
 
     %% Monte-Carlo timing parameters
    

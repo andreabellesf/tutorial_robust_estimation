@@ -30,7 +30,7 @@ for m = 1:nFilters
                 trial, scenario, cfg, filtername);
 
 
-        case 'ConsensusEKF'
+        case 'CEKF'
             estimation.(filtername) = runConsensusEKF( ...
                 trial, scenario, cfg);
 

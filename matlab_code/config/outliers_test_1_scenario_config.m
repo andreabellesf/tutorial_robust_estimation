@@ -79,7 +79,12 @@ cfg.noisemodel.outliers.alpha = 10; % variance inflation factor for outliers
 cfg.filters.enabled = { ...
     'EKF', ...
     'Huber', ...
-    'ConsensusEKF'};
+    'CEKF'};
+
+cfg.filters.names = { ...
+    'EKF', ...
+    'R-EKF', ...
+    'C-EKF'};
 
 cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s 
@@ -104,7 +109,6 @@ cfg.filters.rkf.maxIter      = 20;
 cfg.filters.rkf.stateTol        = 1e-7;
 
 % Consensus-EKF
-cfg.filters.cekf.method = 'ransac'; % Detection method: 'innovation' or 'ransac'
 cfg.filters.cekf.reference = 'spp'; % Reference solution: 'prediction' or 'spp'
 cfg.filters.cekf.maxIter    = 500; % Maximum number of RANSAC iterations, default: 200
 cfg.filters.cekf.probConfidence = 0.99;
@@ -112,6 +116,7 @@ cfg.filters.cekf.priorProbOutlier = 0.5;
 cfg.filters.cekf.minSubsetSize = 5;
 cfg.filters.cekf.inlierThreshold = 3; % Maximum absolute normalized residual, default: 3.0 (three standard deviations)
 cfg.filters.cekf.ransacRefinement = false;
+cfg.filters.cekf.maxRefinementIter = 500;
 
 %% Metrics
 
@@ -130,12 +135,11 @@ cfg.plot.position   = true;
 cfg.plot.velocity   = true;
 cfg.plot.residuals  = true;
 
-cfg.plot.saveFigures = false;
+cfg.plot.saveFigures = true;
 cfg.plot.outputFolder = "figures";
 
 %% Saving
 
-cfg.save.enabled = true;
 cfg.save.printPlotProgress = true;
 cfg.save.exportPDF = true;
 cfg.save.keepFiguresOpen = true; % Keep all figures visible after exporting

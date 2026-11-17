@@ -35,8 +35,8 @@ cfg.simulation.randomSeed = 42;
 cfg.simulation.dt       = 1;       % [s]
 cfg.simulation.nEpochs  = 1000;       % [-]
 cfg.simulation.nCons    = 2; % Number of GNSS constellations
-cfg.simulation.enableGPS = 1; % Enable GPS constellation
-cfg.simulation.enableGAL = 1; % Enable Galileo constellation
+cfg.simulation.enableGPS = true; % Enable GPS constellation
+cfg.simulation.enableGAL = true; % Enable Galileo constellation
 
 %% Monte Carlo
 
@@ -71,16 +71,20 @@ cfg.noisemodel.outliers.enabled = true;
 cfg.noisemodel.outliers.times = [300 500; 600 700]; 
 cfg.noisemodel.outliers.type = "gaussian"; % outlier noise model ("gaussian", "laplacian", "student-t")
 cfg.noisemodel.outliers.epsilon = [0.10; 0.30]; % contamination ratio (fraction of outliers)
-cfg.noisemodel.outliers.mu = [5; 5]; % unifrnd(5,10);
-cfg.noisemodel.outliers.alpha = [10; 10]; % 10 % variance inflation factor for outliers
-cfg.noisemodel.outliers.dof = 5; % degrees of freedom (for Student-t)
+cfg.noisemodel.outliers.mu = [0; 0]; % unifrnd(5,10);
+cfg.noisemodel.outliers.alpha = [100; 100]; % 10 % variance inflation factor for outliers
 
 %% Navigation filters
 
 cfg.filters.enabled = { ...
     'EKF', ...
     'Huber', ...
-    'ConsensusEKF'};
+    'CEKF'};
+
+cfg.filters.names = { ...
+    'EKF', ...
+    'R-EKF', ...
+    'C-EKF'};
 
 cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s 
@@ -105,12 +109,14 @@ cfg.filters.rkf.maxIter      = 20;
 cfg.filters.rkf.stateTol        = 1e-7;
 
 % Consensus-EKF
+cfg.filters.cekf.reference = 'spp'; % Reference solution: 'prediction' or 'spp'
 cfg.filters.cekf.maxIter    = 500; % Maximum number of RANSAC iterations, default: 200
 cfg.filters.cekf.probConfidence = 0.99;
 cfg.filters.cekf.priorProbOutlier = 0.5;
 cfg.filters.cekf.minSubsetSize = 5;
 cfg.filters.cekf.inlierThreshold = 3; % Maximum absolute normalized residual, default: 3.0 (three standard deviations)
-cfg.filters.cekf.ransacRefinement = 1;
+cfg.filters.cekf.ransacRefinement = false;
+cfg.filters.cekf.maxRefinementIter = 500;
 
 %% Metrics
 
@@ -129,12 +135,11 @@ cfg.plot.position   = true;
 cfg.plot.velocity   = true;
 cfg.plot.residuals  = true;
 
-cfg.plot.saveFigures = false;
+cfg.plot.saveFigures = true;
 cfg.plot.outputFolder = "figures";
 
 %% Saving
 
-cfg.save.enabled = 1;
 cfg.save.printPlotProgress = true;
 cfg.save.exportPDF = true;
 cfg.save.keepFiguresOpen = true; % Keep all figures visible after exporting

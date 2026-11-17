@@ -1,11 +1,11 @@
-function [x,P,residuals] = updateEKF(xPred, PPred, y, satPos, nObs, idxSvPerCons, cfg)
+function [x,P,residuals] = updateEKF(xPred, PPred, y, satPos, nObs, clkMatrix, cfg)
 
     nx = length(xPred);
 
     % Make sure measurement vector is a column
     y = y(:);
 
-    [hx,H,R] = observationModel(xPred, satPos, nObs, idxSvPerCons, cfg);
+    [hx,H,R] = observationModel(xPred, satPos, nObs, clkMatrix, cfg);
 
     residuals = y - hx;
 

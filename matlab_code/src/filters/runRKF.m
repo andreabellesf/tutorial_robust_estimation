@@ -54,7 +54,7 @@ for k = 1:n
     pseudorangeEpoch  = trial.gnss.pseudorange(:,k);
     [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition, ...
                                                         pseudorangeEpoch);
-    idxSvPerCons = trial.gnss.satelliteIdx(idxValidSat, :);
+    clockMatrix = trial.gnss.satelliteIdx(idxValidSat, :);
     satPos = trial.gnss.satellitePosition(idxValidSat,:);
     pseudorange = pseudorangeEpoch(idxValidSat);
 
@@ -66,7 +66,7 @@ for k = 1:n
 
     %% Update step
     
-    [xEst,PEst,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsPerEpoch, idxSvPerCons, cfg, filtername);
+    [xEst,PEst,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsPerEpoch, clockMatrix, cfg, filtername);
 
     %% Compute errors and NEES
 

@@ -49,12 +49,10 @@ fprintf('\n--------------------------------------\n');
 
 fprintf('\nSetting up cofiguration...\n');
 
-% cfg = nominal_scenario_config();
-cfg = outliers_test_1_scenario_config();
+cfg = nominal_scenario_config();
+% cfg = outliers_test_1_scenario_config();
 % cfg = outliers_test_2_scenario_config();
 % cfg = outliers_test_3_scenario_config();
-% cfg = outliers_test_4_scenario_config();
-
 
 rng(cfg.simulation.randomSeed);
 
@@ -81,7 +79,6 @@ scenario = generateScenario(cfg);
 
 rng(cfg.simulation.randomSeed);
 
-% example = generateMonteCarloRealization( scenario, cfg);
 example = generateNoise( scenario, cfg);
 
 %% 3. Plot generated scenario
@@ -109,20 +106,13 @@ fprintf('Computing performance metrics...\n');
 metrics = computeMetrics(mcEstimationResults, cfg);
 
 
-%% 6. Plot Monte Carlo results
-
-if cfg.plot.monteCarlo
-    plotMonteCarlo(scenario, mcData, outliersLog, cfg);
-end
-
-
-%% 7. Plot performance metrics
+%% 6. Plot Montecarlo results and performance metrics
 
 if cfg.plot.metrics
     plotMetrics(scenario, metrics, cfg);
 end
 
-%% Save results and figures
+%% 7. Save results and figures
 
 %% 8. Summary
 
