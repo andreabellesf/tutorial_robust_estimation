@@ -1,4 +1,4 @@
-function [estimation, results]  = runMonteCarloRealization(trial, scenario, cfg)
+function [estimation, results]  = runFilters(trial, scenario, cfg)
 
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
