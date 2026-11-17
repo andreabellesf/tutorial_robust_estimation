@@ -4,7 +4,9 @@ nRuns = cfg.monteCarlo.numRuns;
 nFilters = numel(cfg.filters.enabled);
 nEpochs = cfg.simulation.nEpochs;
 nObs = scenario.gnss.nSatellites;
-[~, nState] = stateIndex(nObs);
+nCons = cfg.simulation.nCons;
+[~, nState] = stateIndex(nCons);
+outliersLog = [];
 
 mcEstimationResults = struct();
 mcEstimationFilters = cell(1, nRuns);
@@ -16,6 +18,7 @@ mcEstimationResults.neesPos = nan(nFilters, nEpochs, nRuns);
 mcEstimationResults.neesVel = nan(nFilters, nEpochs, nRuns);
 mcEstimationResults.residuals = nan(nFilters, nObs, nEpochs, nRuns);
 
+
 mcElapsed = zeros(nRuns,1);
 totalTimer = tic;
 
@@ -25,23 +28,10 @@ for iRun = 1:nRuns
     % Reproducible seed for this realization
     rng(cfg.monteCarlo.baseSeed + iRun);
 
-    %% Generate realization-specific measurements
-    trial = generateMonteCarloRealization( scenario, cfg);
-
-    % % % trial = generateNoise( scenario, cfg);
-
     %% Inject outliers / faults into GNSS measurements
-    if cfg.outliers.enabled
-        % Add faults to noisy GNSS measurements and satellite positions
-
-        run(cfg.outliers.profileFilename);
-
-        outliersProfile = mergeOutliersProfiles(cfg.outliers.profile);
-        cfg.outliers.nOutliers = numel(outliersProfile);
-
-        [ trial, outliersLog] = injectOutliers( trial, outliersProfile, cfg);
-
-    end
+    
+    % Generate realization-specific measurements
+    trial = generateNoise( scenario, cfg); 
 
     %% Run all enabled filters
     [estimationFilters, ...

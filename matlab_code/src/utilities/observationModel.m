@@ -1,25 +1,25 @@
-function [hx,H,R] = observationModel(state, satPos, n, cfg)
+function [hx,H,R] = observationModel(state, satPos, nObs, idxSvPerCons, cfg)
 
-% % % % %% State indexing
-% % % % [~, nx] = stateIndex();
+%% State indexing and variable initialization
+[idx, nx] = stateIndex(cfg.simulation.nCons);
 
 %% Measurement model and observation noise
-nx = length(state);
 
-hx = zeros(n, 1);
-H = zeros(n, nx);
+hx = zeros(nObs, 1);
+H = zeros(nObs, nx);
 
-for i = 1:n
-    d = state(1:3) - satPos(:, i);
+for i = 1:nObs
+    d = state(idx.pos) - satPos(i, :).';
     rho = norm(d);
+    clkOff = state(idx.clk(idxSvPerCons(i, :))); 
 
-    hx(i) = rho + state(7);     %%%%% DM: update this state appropiately
+    hx(i) = rho + clkOff;    
 
-    H(i, 1:3) = d' / rho;
-    H(i, 4:6) = zeros(1, 3);
-    H(i, 7)   = 1;
+    H(i, idx.pos) = d' / rho;
+    H(i, idx.vel) = zeros(1, numel(idx.vel));
+    H(i, idx.clk)   = double(idxSvPerCons(i, :));
 end
 
-R = cfg.noisemodel.pseudorangeSigma^2 * eye(n);
+R = cfg.noisemodel.std^2 * eye(nObs);
 
 end

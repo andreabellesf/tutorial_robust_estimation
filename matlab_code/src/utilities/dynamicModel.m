@@ -1,7 +1,7 @@
 function [F, Q] = dynamicModel(dt, cfg)
 
 %% State indexing
-nCons = cfg.filters.nCons;
+nCons = cfg.simulation.nCons;
 [idx, nx] = stateIndex(nCons);
 
 %% Dynamic model and process noise

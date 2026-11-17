@@ -2,7 +2,16 @@ function filter = runConsensusEKF(trial, scenario, cfg)
 % Conventional EKF using GNSS pseudorange observations
 
 n = cfg.simulation.nEpochs;
-nCons = cfg.filters.nCons;
+nCons = cfg.simulation.nCons;
+
+%% Check dimensions
+if ~isequal(size(trial.gnss.pseudorange, 2), n)
+    error('pseudorange must be an nObs x nEpochs matrix.');
+end
+
+if ~isequal(size(trial.gnss.satellitePosition, 2), 3)
+    error('satellitePosition must be an nObs x 3 matrix.');
+end
 
 %% State indexing and variable initialization
 [idx, nx] = stateIndex(nCons);
@@ -20,7 +29,6 @@ neesFullState = zeros(1,n);
 neesPos = zeros(1,n);
 neesVel = zeros(1,n);
 
-%% Initial state
 %% Initialization state
 % Iniial mean of the state
 x(idx.pos) = cfg.filters.initialPosition;
@@ -42,11 +50,14 @@ for k = 1:n
     %% Select valid satellite positions and GNSS measurement for current epoch k
 
     pseudorangeEpoch  = trial.gnss.pseudorange(:,k);
-    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial,pseudorangeEpoch);
-    satPos = trial.gnss.satellitePosition(1:3, idxValidSat);
+    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition, ...
+                                                        pseudorangeEpoch);
+    idxSvPerCons = trial.gnss.satelliteIdx(idxValidSat, :);
+    satPos = trial.gnss.satellitePosition(idxValidSat,:);
     pseudorange = pseudorangeEpoch(idxValidSat);
 
     y = pseudorange(:);
+    residuals = nan(nObsPerEpoch,1);
 
     %% Prediction step
     
@@ -54,13 +65,14 @@ for k = 1:n
 
     %% Update step
 
-    % Get SPP for cross-checking
-    positionSPP = MultiGNSS_Snapshot(y,satPos);
+    % % Get SPP for cross-checking
+    positionSPP = MultiGNSS_Snapshot(y, satPos, idxSvPerCons, cfg);
+     
+    bestInliers = RANSAC_ranges(y, satPos, positionSPP, nObsPerEpoch, cfg);
 
-    bestInliers = RANSAC_ranges(y,satPos);
-
-    [xEst,PEst,residuals] = updateEKF(xPred, PPred, y(bestInliers), satPos(:,bestInliers), length(bestInliers), cfg);
-
+    [xEst,PEst,residuals_best] = updateEKF(xPred, PPred, y(bestInliers), satPos(bestInliers,:), length(bestInliers), idxSvPerCons, cfg);
+    residuals(bestInliers) = residuals_best;
+    
     %% Compute errors and NEES
 
     [errorEst(:, k), ...

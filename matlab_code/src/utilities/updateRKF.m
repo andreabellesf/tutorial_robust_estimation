@@ -1,12 +1,11 @@
-function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsPerEpoch, cfg, filtername)
+function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObs, idxSvPerCons, cfg, filtername)
 
-    [idx, nx] = stateIndex();    
-    m  = length(y);
+    [idx, nx] = stateIndex(cfg.simulation.nCons);    
 
     % Make sure measurement vector is a column
     y = y(:);
 
-    [~,H,R] = observationModel(xPred(idx.pos), satPos, nObsPerEpoch, cfg);
+    [~,H,R] = observationModel(xPred, satPos, nObs, idxSvPerCons, cfg);
 
     [L,~] = chol(R,'lower');
 
@@ -14,16 +13,16 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsP
     Yminus = PPred \ eye(nx);
 
     % Initialization
-    W = eye(m);
+    W = eye(nObs);
     w = diag(W);
 
     xIter = xPred;
     errorState = zeros(nx,1);
 
     % Robust EKF loop
-    for it = 1:cfg.filters.nIterRKF
+    for it = 1:cfg.filters.rkf.maxIter
 
-        [h,~,~] = observationModel(xIter(idx.pos), satPos, nObsPerEpoch, cfg);
+        [h,~,~] = observationModel(xIter, satPos, nObs, idxSvPerCons, cfg);
         
         residuals = y - h;
 
@@ -41,7 +40,7 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsP
 
         u = L \ residuals;
 
-        w = robustWeights(u,filtername,cfg.filters.tuning);
+        w = robustWeights(u,filtername,cfg.filters.rkf);
         w = w(:);
         W = diag(w);
 
@@ -50,7 +49,7 @@ function [xPost,PPost,info,residuals] = updateRKF(xPred, PPred, y, satPos, nObsP
                      
         xIter = xNew;
 
-        if dxConv < cfg.filters.stateTol 
+        if dxConv < cfg.filters.rkf.stateTol 
             break
         end
 

@@ -49,10 +49,18 @@ fprintf('\n--------------------------------------\n');
 
 fprintf('\nSetting up cofiguration...\n');
 
-cfg = nominal_scenario_config();
+% cfg = nominal_scenario_config();
+cfg = outliers_test_1_scenario_config();
+% cfg = outliers_test_2_scenario_config();
+% cfg = outliers_test_3_scenario_config();
+% cfg = outliers_test_4_scenario_config();
+
 
 rng(cfg.simulation.randomSeed);
 
+if ~exist(cfg.paths.results,'dir'), mkdir(cfg.paths.results); end
+if ~exist(cfg.paths.figures,'dir'), mkdir(cfg.paths.figures); end
+if ~exist(cfg.paths.scenario,'dir'), mkdir(cfg.paths.scenario); end
 
 %% 2. Generate reference scenario
 
@@ -66,15 +74,15 @@ scenario = generateScenario(cfg);
 %   scenario.truth.velocity
 %   scenario.truth.x
 %   scenario.gnss.idealPseudorange
-%   scenario.gnss.satellitePosition (ECEF, ENU)
+%   scenario.gnss.satellitePosition (ENU)
 %   scenario.gnss.nSatellites
-%   scenario.gnss.satelliteId (all, enabled cons)
 
 %% 2. Generate one example GNSS realization
 
 rng(cfg.simulation.randomSeed);
 
-example = generateMonteCarloRealization( scenario, cfg);
+% example = generateMonteCarloRealization( scenario, cfg);
+example = generateNoise( scenario, cfg);
 
 %% 3. Plot generated scenario
 
@@ -82,7 +90,7 @@ if cfg.plot.scenario
     plotScenario(scenario, example, cfg);
 end
 
-% % Verify scenario
+%%% Verify scenario
 if cfg.plot.verifyScenario
     verifyScenario(scenario, cfg);
 end
@@ -111,15 +119,20 @@ end
 %% 7. Plot performance metrics
 
 if cfg.plot.metrics
-    plotMetrics(scenario, metrics, outliersLog, cfg);
+    plotMetrics(scenario, metrics, cfg);
 end
 
+%% Save results and figures
 
 %% 8. Summary
 
 fprintf('\nSimulation complete.\n');
-
+fprintf('Output directory: %s\n',cfg.paths.figures);
 % disp(metrics.summary);
+fprintf('------------------------------------------------------------\n');
+
+
+
 
 
 

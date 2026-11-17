@@ -110,10 +110,11 @@ if nSatellites >= 3+Number_of_constellation && is_not_nan_condition
             y(iSV) = pseudorange(iSV) - d(iSV) - CLKoffset'*G(iSV,4:end)'; % Difference between the pseudorange (including corrections) and the previous distance
             G(iSV,1:3) = [ (Position(1)-SV_position(iSV,1))/d(iSV), (Position(2)-SV_position(iSV,2))/d(iSV), (Position(3)-SV_position(iSV,3))/d(iSV)]; % Construction of the G measurement matrix
         end
-        G_used = G(subset,:);
+        % G_used = G(subset,:);
+        G_used = G;
         if cond(G_used) < condition_check
             %Least square method
-            estimatedState = (G_used' * inv(R_matrix) * G_used) \ G_used' * inv(R_matrix) * y(subset);
+            estimatedState = (G_used' * inv(R_matrix) * G_used) \ G_used' * inv(R_matrix) * y;
             oldPosition = Position;
             Position   = Position + estimatedState(1:3);
             CLKoffset  = CLKoffset + estimatedState(4:end);

@@ -1,4 +1,4 @@
-function [] = plotMetrics(scenario, metrics, outliersLog, cfg)
+function [] = plotMetrics(scenario, metrics, cfg)
 
 %% Plotting options
 t = scenario.time;
@@ -10,11 +10,11 @@ catch
     C = lines(12);
 end
 
-%% Results MC -- Plot A: 3-D position error
+%% Results MC -- Plot A: 3D position error
 % Solid lines show epoch-wise RMSE across MC runs.
 % Transparent bands show the 5th--95th percentile interval.
 
-figure; hold on; grid on; box on;
+f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
@@ -45,14 +45,18 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
-if cfg.outliers.enabled
+if cfg.noisemodel.outliers.enabled
     axs = findobj(gca, 'Type', 'axes');
-    addFaultPatches(axs, outliersLog);
+    addFaultPatches(axs, cfg);
+end
+
+if cfg.save.enabled
+    saveFig(f,cfg,['Fig_Pos_3D_RMSE']);
 end
 
 %% Results MC -- Plot B: position-only ANEES
 
-figure; hold on; grid on; box on;
+f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
@@ -83,14 +87,18 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
-if cfg.outliers.enabled
+if cfg.noisemodel.outliers.enabled
     axs = findobj(gca, 'Type', 'axes');
-    addFaultPatches(axs, outliersLog);
+    addFaultPatches(axs, cfg);
+end
+
+if cfg.save.enabled
+    saveFig(f,cfg,['Fig_Pos_Only_ANEES']);
 end
 
 %% Results MC -- Plot C: full-state ANEES
 
-figure; hold on; grid on; box on;
+f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
@@ -121,14 +129,18 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
-if cfg.outliers.enabled
+if cfg.noisemodel.outliers.enabled
     axs = findobj(gca, 'Type', 'axes');
-    addFaultPatches(axs, outliersLog);
+    addFaultPatches(axs, cfg);
+end
+
+if cfg.save.enabled
+    saveFig(f,cfg,['Fig_Full_State_ANEES']);
 end
 
 %% Results MC -- Plot D: Estimated residuals
 
-figure; hold on; grid on; box on;
+f=figure; hold on; grid on; box on;
 
 for iFilter = 1:metrics.nFilters
 
@@ -154,10 +166,13 @@ legend('show','Location','northeast','NumColumns',1, ...
 
 set(gca, 'FontSize',15, 'TickLabelInterpreter','latex');
 
-if cfg.outliers.enabled
+if cfg.noisemodel.outliers.enabled
     axs = findobj(gca, 'Type', 'axes');
-    addFaultPatches(axs, outliersLog);
+    addFaultPatches(axs, cfg);
 end
 
+if cfg.save.enabled
+    saveFig(f,cfg,['Fig_Est_Residuals']);
+end
 
 end

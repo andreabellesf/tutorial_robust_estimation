@@ -1,7 +1,7 @@
-function addFaultPatches(ax, faultLog)
+function addFaultPatches(ax, cfg)
     % Create grey patches for faults (if present)
     % Extract intervals from fault log
-    intervals = [[faultLog.startTime]' [faultLog.endTime]'];
+    intervals = cfg.noisemodel.outliers.times;
     % Convert epoch indices to time in seconds
     % intervals = scenario.time(intervalsEpoch);
     % Current y-axis limits

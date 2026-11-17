@@ -15,8 +15,6 @@ state_reference(:,1) = [    cfg.trajectory.initialPosition(:) + cfg.trajectory.i
 
 %% Define motion model matrices
 
-dt = cfg.simulation.dt;
-
 switch cfg.trajectory.type
     case 'constant_velocity'
         F = [eye(3), dt*eye(3), zeros(3,nCons);

@@ -2,7 +2,16 @@ function filter = runEKF(trial, scenario, cfg)
 % Conventional EKF using GNSS pseudorange observations
 
 n = cfg.simulation.nEpochs;
-nCons = cfg.filters.nCons;
+nCons = cfg.simulation.nCons;
+
+%% Check dimensions
+if ~isequal(size(trial.gnss.pseudorange, 2), n)
+    error('pseudorange must be an nObs x nEpochs matrix.');
+end
+
+if ~isequal(size(trial.gnss.satellitePosition, 2), 3)
+    error('satellitePosition must be an nObs x 3 matrix.');
+end
 
 %% State indexing and variable initialization
 [idx, nx] = stateIndex(nCons);
@@ -41,9 +50,10 @@ for k = 1:n
     %% Select valid satellite positions and GNSS measurement for current epoch k
 
     pseudorangeEpoch  = trial.gnss.pseudorange(:,k);
-    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition.ENU, ...
+    [idxValidSat,~,nObsPerEpoch] = makeSvIndexEpoch(trial.gnss.satellitePosition, ...
                                                         pseudorangeEpoch);
-    satPos = trial.gnss.satellitePosition.ENU(:, idxValidSat);
+    idxSvPerCons = trial.gnss.satelliteIdx(idxValidSat, :);
+    satPos = trial.gnss.satellitePosition(idxValidSat,:);
     pseudorange = pseudorangeEpoch(idxValidSat);
 
     y = pseudorange(:);
@@ -54,7 +64,7 @@ for k = 1:n
 
     %% Update step
     
-    [xEst,PEst,residuals] = updateEKF(xPred, PPred, y, satPos, nObsPerEpoch, cfg);
+    [xEst,PEst,residuals] = updateEKF(xPred, PPred, y, satPos, nObsPerEpoch, idxSvPerCons, cfg);
 
     %% Compute errors and NEES
 

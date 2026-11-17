@@ -11,6 +11,8 @@ function cfg = nominal_scenario_config()
 %       - plotting
 
 %% File names and directories
+cfg.scenarioName = 'nominal';
+
 % Location of this file
 configDir = fileparts(mfilename('fullpath'));
 
@@ -21,19 +23,20 @@ cfg.paths.root = fileparts(configDir);
 cfg.paths.gnssData     = fullfile(cfg.paths.root, 'data');
 cfg.paths.results     = fullfile(cfg.paths.root, 'results');
 cfg.paths.figures     = fullfile(cfg.paths.results, 'figures');
+cfg.paths.scenario  = fullfile(cfg.paths.figures, cfg.scenarioName);
 
 % Data filenames
-cfg.filename.gnssData = 'opensky_2022_neustrelitz_satellite_positions_enu';
-
+cfg.filename.gnssData.satellitePositions = 'opensky_2022_neustrelitz_satellite_positions_enu';
+cfg.filename.gnssData.satelliteInfo = 'opensky_SatelliteInformation';
 
 %% Simulation
 
 cfg.simulation.randomSeed = 42;
 cfg.simulation.dt       = 1;       % [s]
 cfg.simulation.nEpochs  = 1000;       % [-]
-cfg.simulation.nCons    = 1; % Number of GNSS constellations
-
-
+cfg.simulation.nCons    = 2; % Number of GNSS constellations
+cfg.simulation.enableGPS = 1; % Enable GPS constellation
+cfg.simulation.enableGAL = 1; % Enable Galileo constellation
 
 %% Monte Carlo
 
@@ -61,13 +64,17 @@ cfg.trajectory.clkSigma = 1; % in [m/s] Random Walk description for the evolutio
 
 
 %% Observations noise and fault configuration
-cfg.noisemodel.type = "gaussian";
-cfg.noisemodel.pseudorangeSigma = 1;     % std for pseudorange measurements [m]
+cfg.noisemodel.type = "gaussian"; % nominal noise model ("gaussian", "laplacian", "student-t")
+cfg.noisemodel.std = 1;     % standard deviation of nominal noise for pseudorange measurements [m]
 
-cfg.noisemodel.faultsEnabled = false;
-cfg.noisemodel.faultsTimes = [300 500; 600 700];
-cfg.noisemodel.faultsType = "gaussian";
-cfg.noisemodel.fractionOutlier = [0.25; 0.50]; % fraction of satellites
+cfg.noisemodel.outliers.enabled = false;
+cfg.noisemodel.outliers.times = [300 500; 600 700]; 
+cfg.noisemodel.outliers.type = "gaussian"; % outlier noise model ("gaussian", "laplacian", "student-t")
+cfg.noisemodel.outliers.epsilon = [0.30]; % contamination ratio (fraction of outliers)
+cfg.noisemodel.outliers.mu = unifrnd(5,10);
+cfg.noisemodel.outliers.alpha = 10; % variance inflation factor for outliers
+cfg.noisemodel.outliers.dof = 5; % degrees of freedom (for Student-t)
+cfg.noisemodel.outliers.scale = 5; % scale parameter (used in Laplacian/Student-t)
 
 
 %% Navigation filters
@@ -75,7 +82,7 @@ cfg.noisemodel.fractionOutlier = [0.25; 0.50]; % fraction of satellites
 cfg.filters.enabled = { ...
     'EKF', ...
     'Huber', ...
-    'Consensus-EKF'};
+    'ConsensusEKF'};
 
 cfg.filters.initPosSigma = 30;      % m
 cfg.filters.initVelSigma = 2;       % m/s 
@@ -87,26 +94,31 @@ cfg.filters.initialClkOffest = zeros(cfg.simulation.nCons, 1);
 
 cfg.filters.trajectory.type = "constant_velocity";
 
-cfg.filters.nCons = cfg.simulation.nCons;
 % Process-noise standard deviations
 cfg.filters.velSigma = [0.1;0.1;0.1]; % expressed in the ENU frame, in [m/s/s]
 cfg.filters.clkSigma = 1; % in [m/s] Random Walk description for the evolution of the clock offsets (equal for all GNSS constellations)
 
 % Robust tuning constants
-cfg.filters.tuning.Huber        = 1.345;
-cfg.filters.tuning.Tukey        = 4.6851;
+cfg.filters.rkf.cHuber        = 1.345;
+cfg.filters.rkf.cTukey        = 4.6851;
 
 % Robust EKF
-cfg.filters.nIterRKF      = 20;
-cfg.filters.stateTol      = 1e-7;
+cfg.filters.rkf.maxIter      = 20;
+cfg.filters.rkf.stateTol        = 1e-7;
 
+% Consensus-EKF
+cfg.filters.cekf.maxIter    = 500; % Maximum number of RANSAC iterations, default: 200
+cfg.filters.cekf.probConfidence = 0.99;
+cfg.filters.cekf.priorProbOutlier = 0.5;
+cfg.filters.cekf.minSubsetSize = 5;
+cfg.filters.cekf.inlierThreshold = 3; % Maximum absolute normalized residual, default: 3.0 (three standard deviations)
+cfg.filters.cekf.ransacRefinement = 1;
 
 %% Metrics
 
 cfg.metrics.computeRMSE = true;
 cfg.metrics.computeNEES = true;
 cfg.metrics.alpha    = 0.05;      % 95% consistency interval
-
 
 %% Plotting
 
@@ -121,5 +133,13 @@ cfg.plot.residuals  = true;
 
 cfg.plot.saveFigures = false;
 cfg.plot.outputFolder = "figures";
+
+%% Saving
+
+cfg.save.enabled = 1;
+cfg.save.printPlotProgress = true;
+cfg.save.exportPDF = true;
+cfg.save.keepFiguresOpen = true; % Keep all figures visible after exporting
+cfg.save.pngResolution = 180;
 
 end

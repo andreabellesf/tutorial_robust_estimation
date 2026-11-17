@@ -30,9 +30,9 @@ for m = 1:nFilters
                 trial, scenario, cfg, filtername);
 
 
-        case 'Consensus-EKF'
-            result.(filtername) = runConsensusEKF( ...
-                trial, scenario, cfg, filtername);
+        case 'ConsensusEKF'
+            estimation.(filtername) = runConsensusEKF( ...
+                trial, scenario, cfg);
 
         otherwise
 
