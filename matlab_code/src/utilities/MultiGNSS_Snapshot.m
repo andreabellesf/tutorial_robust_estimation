@@ -51,7 +51,7 @@ function [pos, clkOffset, residuals, P, G, reliable] = ...
     addParameter(parser, 'subset', [], @(x) isnumeric(x) || islogical(x));
     addParameter(parser, 'obsCovR', [], @(x) isnumeric(x) && ismatrix(x));
     addParameter(parser, 'initPosition', [0;0;0], @(x) isnumeric(x) && isreal(x) && numel(x)==3 && all(isfinite(x(:))));
-    addParameter(parser, 'initClockOffset', [0;0], @(x) isnumeric(x) && isreal(x) && numel(x)==nCons && all(isfinite(x(:))));
+    addParameter(parser, 'initClockOffset', zeros(nCons,1), @(x) isnumeric(x) && isreal(x) && numel(x)==nCons && all(isfinite(x(:))));
     addParameter(parser, 'maxIter', 100, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>=1 && x==floor(x));
     addParameter(parser, 'errorTol', 1e-6, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>0);
     addParameter(parser, 'conditionCheck', 1000, @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x>0);
@@ -120,7 +120,8 @@ function [pos, clkOffset, residuals, P, G, reliable] = ...
             break;
         end
         G = [delta ./ distance, C];
-        innovation = yObs - distance - C*clkOffset;
+        earthRotationCorr = sv(:, 1:2)*[pos(2); -pos(1)] * 2.432387790989725e-13;
+        innovation = yObs - distance - C*clkOffset - earthRotationCorr;
 
         % Whitened WLS: minimizes ||L\(G*step - innovation)||^2.
         A = L\G;
@@ -130,6 +131,7 @@ function [pos, clkOffset, residuals, P, G, reliable] = ...
             break;
         end
         step = A\b;
+        % step = (G'*G)\G'*innovation;
         pos = pos + step(1:3);
         clkOffset = clkOffset + step(4:end);
 
@@ -143,7 +145,8 @@ function [pos, clkOffset, residuals, P, G, reliable] = ...
             if rank(A) < nState || cond(A) >= opts.conditionCheck
                 break;
             end
-            residuals = yObs - distance - C*clkOffset;
+            earthRotationCorr = sv(:, 1:2)*[pos(2); -pos(1)] * 2.432387790989725e-13;
+            residuals = yObs - distance - C*clkOffset - earthRotationCorr;
             P = (A.'*A)\eye(nState);
             reliable = true;
             return;

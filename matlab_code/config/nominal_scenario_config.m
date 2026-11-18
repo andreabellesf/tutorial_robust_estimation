@@ -20,14 +20,17 @@ configDir = fileparts(mfilename('fullpath'));
 cfg.paths.root = fileparts(configDir);
 
 % Data directories
-cfg.paths.gnssData     = fullfile(cfg.paths.root, 'data');
+cfg.paths.gnssData.synthetic = fullfile(cfg.paths.root, 'data/synthetic');
+cfg.paths.gnssData.real      = fullfile(cfg.paths.root, 'data/real');
 cfg.paths.results     = fullfile(cfg.paths.root, 'results');
 cfg.paths.figures     = fullfile(cfg.paths.results, 'figures');
 cfg.paths.scenario  = fullfile(cfg.paths.figures, cfg.scenarioName);
 
 % Data filenames
-cfg.filename.gnssData.satellitePositions = 'opensky_2022_neustrelitz_satellite_positions_enu';
-cfg.filename.gnssData.satelliteInfo = 'opensky_SatelliteInformation';
+cfg.filename.gnssData.synthetic.satellitePositions = 'opensky_2022_neustrelitz_satellite_positions'; % ECEF
+% cfg.filename.gnssData.synthetic.satellitePositions = 'opensky_2022_neustrelitz_satellite_positions_enu'; % ENU
+cfg.filename.gnssData.synthetic.satelliteInfo = 'opensky_SatelliteInformation';
+cfg.filename.gnssData.real = 'doy188_2026_COM14_broadcast_code';
 
 %% Simulation
 
@@ -37,6 +40,7 @@ cfg.simulation.nEpochs  = 1000;       % [-]
 cfg.simulation.nCons    = 2; % Number of GNSS constellations
 cfg.simulation.enableGPS = true; % Enable GPS constellation
 cfg.simulation.enableGAL = true; % Enable Galileo constellation
+cfg.simulation.enableRealData = false; % Enable real data loading or not (if not, synthetic data will be generated)
 
 %% Monte Carlo
 

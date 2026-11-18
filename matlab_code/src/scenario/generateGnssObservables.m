@@ -4,10 +4,10 @@ nEpochs = cfg.simulation.nEpochs;
 nCons = cfg.simulation.nCons;
 
 %% Load GNSS ephemeris 
-fileName_satellitePositions = fullfile(cfg.paths.gnssData, cfg.filename.gnssData.satellitePositions);
+fileName_satellitePositions = fullfile(cfg.paths.gnssData.synthetic, cfg.filename.gnssData.synthetic.satellitePositions);
 load(fileName_satellitePositions);
 
-fileName_satelliteInfo = fullfile(cfg.paths.gnssData, cfg.filename.gnssData.satelliteInfo);
+fileName_satelliteInfo = fullfile(cfg.paths.gnssData.synthetic, cfg.filename.gnssData.synthetic.satelliteInfo);
 load(fileName_satelliteInfo);
 
 %% Generate GNSS observations
