@@ -1,5 +1,5 @@
 function filter = runRKF(trial, scenario, cfg, filtername)
-% Conventional EKF using GNSS pseudorange observations
+% Robust M-based Kalman Filter using GNSS pseudorange observations
 
 n = cfg.simulation.nEpochs;
 nCons = cfg.simulation.nCons;
