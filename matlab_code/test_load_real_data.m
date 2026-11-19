@@ -20,6 +20,7 @@ posEstSPP = nan(3,nEpochs);
 clkOffEstSPP = nan(nCons,nEpochs);
 residualsSPP = cell(1,nEpochs);
 
+
 %% Load data 
 fileName = fullfile(path, filename);
 load(fileName);
@@ -35,6 +36,13 @@ epochInit = rowCodeCorr;
 epochEnd  = rowCodeCorr+nEpochs-1;
 epochs = epochInit:1:epochEnd;
 
+nSat = nan(nEpochs,1);
+nSatGnss = nan(nEpochs, nCons);
+
+svAzim = nan(nEpochs,nSatTotal);
+svElev = nan(nEpochs,nSatTotal);
+svSnr = nan(nEpochs,nSatTotal);
+
 for t = 1:nEpochs
     
     k = epochs(t);
@@ -43,9 +51,11 @@ for t = 1:nEpochs
     idxSat = find(~isnan(tmpCodeCorr(k, 1:nSatTotal)));
     % idxSat = find(~isnan(data.SV_PosX(k, :)));
     idSat = data.satellite_id(idxSat);
-    nSat = numel(idxSat);
+    nSat(t) = numel(idxSat);
+    nSatGnss(t,:) = [ sum(startsWith(idSat, 'G')), sum(startsWith(idSat, 'E'))];
+    svId = find(~isnan(tmpCodeCorr(k,:)));
 
-    clockMatrix = zeros(nSat, 2);
+    clockMatrix = zeros(nSat(t), 2);
     clockMatrix(:,1) = startsWith(idSat, 'G');
     clockMatrix(:,2) = startsWith(idSat, 'E');
 
@@ -62,13 +72,15 @@ for t = 1:nEpochs
     pseudorange = tmpCodeCorr(k, idxSat);
     pseudorange = pseudorange(:);
 
-    [pos, clkOffset, residuals, P, G, reliable] = ...
-        MultiGNSS_Snapshot( ...
-        pseudorange, satPos, clockMatrix);
+    [pos, clkOffset, residuals, P, G, reliable] = MultiGNSS_Snapshot( pseudorange, satPos, clockMatrix);
 
     posEstSPP(:, t) = pos;
     clkOffEstSPP(validCols, t) = clkOffset;
     residualsSPP{t} = residuals;
+
+    [svElev(t,svId), svAzim(t,svId)] = satelliteAzimthElevation(satPos, pos);
+
+    svSnr(t,svId) = data.obs_snr(k,svId);
 
 end
 
@@ -77,7 +89,18 @@ posErr_1 = posErr_1.';
 posErrSquared_1 = sum(posErr_1.^2, 1);
 rmse_1 = sqrt(mean(posErrSquared_1, 3));
 
-figure; plot(epochs, rmse_1);
+
+
+%% Visualization
+set(groot,'defaultFigureColor','w')
+set(groot,'defaulttextinterpreter','latex');  
+set(groot, 'defaultAxesTickLabelInterpreter','latex');  
+set(groot, 'defaultLegendInterpreter','latex');  
+set(groot,'defaultAxesFontSize',13);
+set(groot,'DefaultAxesXGrid','on')
+set(groot,'DefaultAxesYGrid','on')
+
+figure; plot(epochs, rmse_1); %grid on; 
 xlabel('epochs','Interpreter','latex');
 ylabel('3D position RMSE [m]','Interpreter','latex');
 title(['SPP HU - GT: ' string(filename)],'Interpreter','latex', 'FontSize', 9)
@@ -86,10 +109,23 @@ posErr_2 = posEstSPP - (data.GroundTruth(epochs, 3:end).');
 posErrSquared_2 = sum(posErr_2.^2, 1);
 rmse_2 = sqrt(mean(posErrSquared_2, 3));
 
-figure; plot(epochs, rmse_2);
+figure;  plot(epochs, rmse_2); %grid on; 
 xlabel('epochs','Interpreter','latex');
 ylabel('3D position RMSE [m]','Interpreter','latex');
 title(['SPP AB - GT: ' string(filename)],'Interpreter','latex', 'FontSize', 9)
 
 % save("data\real\berlin_waters_scene03.mat", 'pseudorange')
+
+select=~isnan(svElev);
+
+aux1=svElev(select);
+
+
+
+% % plotGnssSkyplot(satPos, pos, satIDs, cfg)
+
+skyPlot(svElev(select), svAzim(select), 'snr', svSnr(select))
+
+skyPlot(svElev(t,svId), svAzim(t,svId), 'snr', svSnr(t,svId),'satelliteId',idSat, 'makenewfigure',0 )
+
 
